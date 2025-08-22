@@ -1,30 +1,78 @@
 #!/bin/bash
 
-# Update Manager - 包括的プログラム更新管理ツール
-# 全てのパッケージマネージャー、手動インストール、Gitリポジトリ等を統合管理
+# Update Manager - YAML版
+# YAMLファイルでプログラム情報を管理
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.update-manager"
-DATA_FILE="$CONFIG_DIR/programs.json"
+DATA_FILE="$CONFIG_DIR/programs.yaml"
 LOG_FILE="$CONFIG_DIR/update.log"
 
-# 色付きメッセージ用
+# YAML処理関数（内蔵）
+yaml_list_section() {
+    local yaml_file="$1"
+    local section="$2"
+    
+    awk -v section="$section" '
+    BEGIN { in_section = 0; section_indent = -1 }
+    /^[[:space:]]*[^#[:space:]]/ {
+        match($0, /^[[:space:]]*/); 
+        indent = RLENGTH
+        
+        gsub(/^[[:space:]]*/, "")
+        gsub(/:.*$/, "")
+        
+        if (indent == 0 && $0 == section) {
+            in_section = 1
+            section_indent = 0
+        } else if (in_section) {
+            if (indent <= section_indent && section_indent >= 0) {
+                in_section = 0
+            } else if (indent == 2) {
+                print $0
+            }
+        }
+    }' "$yaml_file"
+}
+
+# YAML値取得（簡易版）
+get_program_value() {
+    local prog_name="$1"
+    local field="$2"
+    local yaml_file="$DATA_FILE"
+    
+    # プログラム名の後の該当フィールドを探す
+    awk -v prog="$prog_name" -v field="$field" '
+    /^[[:space:]]*'$prog_name':[[:space:]]*$/ { in_prog=1; next }
+    in_prog && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
+        if (!/^[[:space:]]{4}/) in_prog=0 
+    }
+    in_prog && /^[[:space:]]{4}'$field':[[:space:]]/ {
+        sub(/^[[:space:]]*'$field':[[:space:]]*/, "")
+        gsub(/^"/, ""); gsub(/"$/, "")
+        print
+        exit
+    }
+    ' "$yaml_file"
+}
+
+# 色付きメッセージ
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
-
-# ログ出力関数
-log() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
-}
+NC='\033[0m'
 
 info() {
     echo -e "${BLUE}[INFO]${NC} $1"
     log "INFO: $1"
+}
+
+success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    log "SUCCESS: $1"
 }
 
 warn() {
@@ -37,9 +85,8 @@ error() {
     log "ERROR: $1"
 }
 
-success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-    log "SUCCESS: $1"
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG_FILE"
 }
 
 # 初期化
@@ -50,31 +97,139 @@ init() {
     fi
     
     if [[ ! -f "$DATA_FILE" ]]; then
-        echo '{"programs": [], "last_scan": "", "categories": {}}' > "$DATA_FILE"
-        info "データファイルを初期化: $DATA_FILE"
+        cat > "$DATA_FILE" << 'EOF'
+# プログラム管理データベース
+# 最終更新: 自動生成
+
+metadata:
+  last_scan: ""
+  total_programs: 0
+  created_at: ""
+
+statistics:
+  apt: 0
+  snap: 0
+  npm: 0
+  git: 0
+  manual: 0
+  unknown: 0
+
+programs: {}
+EOF
+        info "YAMLデータファイルを初期化: $DATA_FILE"
     fi
 }
 
-# 全プログラムスキャン
-scan_all() {
-    info "全プログラムのスキャンを開始..."
+# プログラムスキャン（シンプル版）
+scan_programs() {
+    info "プログラムスキャンを開始..."
     
-    # サブスクリプト実行
-    if [[ -f "$SCRIPT_DIR/detect-all-programs.sh" ]]; then
-        bash "$SCRIPT_DIR/detect-all-programs.sh"
-    else
-        warn "detect-all-programs.sh が見つかりません"
-    fi
+    # 一時的なスキャン結果
+    local temp_file=$(mktemp)
     
-    if [[ -f "$SCRIPT_DIR/classify-update-method.sh" ]]; then
-        bash "$SCRIPT_DIR/classify-update-method.sh"
-    else
-        warn "classify-update-method.sh が見つかりません"
-    fi
+    # PATH内の主要ディレクトリをスキャン
+    local scan_dirs=("/usr/bin" "/usr/local/bin" "/bin")
+    local count=0
     
-    # 最終スキャン時刻を記録
-    jq --arg date "$(date -Iseconds)" '.last_scan = $date' "$DATA_FILE" > "$DATA_FILE.tmp" && mv "$DATA_FILE.tmp" "$DATA_FILE"
-    success "スキャン完了"
+    for dir in "${scan_dirs[@]}"; do
+        if [[ -d "$dir" && -r "$dir" ]]; then
+            info "  スキャン中: $dir"
+            
+            # 実行ファイルを検出（最初の50個まで）
+            find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | head -50 | while IFS= read -r file; do
+                local name=$(basename "$file")
+                local category="unknown"
+                local package_name="none"
+                local version="unknown"
+                
+                # パッケージマネージャー判定
+                if dpkg -S "$file" >/dev/null 2>&1; then
+                    category="apt"
+                    package_name=$(dpkg -S "$file" 2>/dev/null | cut -d: -f1)
+                elif [[ "$file" =~ /snap/ ]]; then
+                    category="snap"
+                elif [[ "$file" =~ /usr/local/ ]]; then
+                    category="manual"
+                fi
+                
+                # バージョン取得試行
+                if command -v "$name" >/dev/null 2>&1; then
+                    version=$("$name" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 || echo "unknown")
+                fi
+                
+                echo "$name|$file|$category|$package_name|$version" >> "$temp_file"
+                count=$((count + 1))
+            done
+        fi
+    done
+    
+    # YAMLファイルを更新
+    update_yaml_from_scan "$temp_file" "$count"
+    rm -f "$temp_file"
+    
+    success "スキャン完了: $count 個のプログラムを検出"
+}
+
+# スキャン結果をYAMLに反映
+update_yaml_from_scan() {
+    local scan_file="$1"
+    local total_count="$2"
+    
+    # YAMLファイルを再構築
+    cat > "$DATA_FILE" << EOF
+# プログラム管理データベース
+# 最終更新: $(date -Iseconds)
+
+metadata:
+  last_scan: "$(date -Iseconds)"
+  total_programs: $total_count
+  created_at: "$(date -Iseconds)"
+
+statistics:
+EOF
+
+    # 統計情報を追加
+    local apt_count=$(grep -c "|apt|" "$scan_file" 2>/dev/null || echo 0)
+    local snap_count=$(grep -c "|snap|" "$scan_file" 2>/dev/null || echo 0)
+    local manual_count=$(grep -c "|manual|" "$scan_file" 2>/dev/null || echo 0)
+    local unknown_count=$(grep -c "|unknown|" "$scan_file" 2>/dev/null || echo 0)
+    
+    cat >> "$DATA_FILE" << EOF
+  apt: $apt_count
+  snap: $snap_count
+  manual: $manual_count
+  unknown: $unknown_count
+
+programs:
+EOF
+
+    # プログラム情報を追加
+    while IFS='|' read -r name path category package version; do
+        if [[ -n "$name" ]]; then
+            cat >> "$DATA_FILE" << EOF
+  $name:
+    path: "$path"
+    category: "$category"
+    package: "$package"
+    version: "$version"
+    last_checked: "$(date -Iseconds)"
+    update_method: "$(get_update_method "$category" "$name")"
+EOF
+        fi
+    done < "$scan_file"
+}
+
+# 更新方法を決定
+get_update_method() {
+    local category="$1"
+    local name="$2"
+    
+    case "$category" in
+        "apt") echo "apt upgrade $name" ;;
+        "snap") echo "snap refresh $name" ;;
+        "manual") echo "manual update required" ;;
+        *) echo "unknown" ;;
+    esac
 }
 
 # プログラム一覧表示
@@ -89,179 +244,82 @@ list_programs() {
     info "プログラム一覧 (カテゴリ: $category)"
     echo "----------------------------------------"
     
-    if [[ "$category" == "all" ]]; then
-        jq -r '.programs[] | "\(.name) [\(.category)] - \(.path)"' "$DATA_FILE"
-    else
-        jq -r --arg cat "$category" '.programs[] | select(.category == $cat) | "\(.name) [\(.category)] - \(.path)"' "$DATA_FILE"
+    # プログラム名の一覧を取得
+    local programs
+    programs=$(yaml_list_section "$DATA_FILE" "programs")
+    
+    if [[ -z "$programs" ]]; then
+        warn "プログラムが登録されていません"
+        return 0
     fi
+    
+    echo "$programs" | while IFS= read -r prog_name; do
+        if [[ -n "$prog_name" ]]; then
+            local prog_category=$(get_program_value "$prog_name" "category")
+            local prog_path=$(get_program_value "$prog_name" "path")
+            local prog_version=$(get_program_value "$prog_name" "version")
+            
+            if [[ "$category" == "all" || "$prog_category" == "$category" ]]; then
+                echo "$prog_name [$prog_category] $prog_version - $prog_path"
+            fi
+        fi
+    done
 }
 
-# カテゴリ一覧表示
-list_categories() {
+# 統計情報表示
+show_statistics() {
     if [[ ! -f "$DATA_FILE" ]]; then
-        error "データファイルが見つかりません。まず --scan を実行してください"
+        error "データファイルが見つかりません"
         return 1
     fi
     
-    info "利用可能なカテゴリ:"
-    jq -r '.programs[].category' "$DATA_FILE" | sort | uniq -c | sort -nr
+    info "プログラム管理統計:"
+    echo "  APT管理: $(grep "^[[:space:]]*apt:" "$DATA_FILE" | sed 's/.*: //')"
+    echo "  Snap管理: $(grep "^[[:space:]]*snap:" "$DATA_FILE" | sed 's/.*: //')"
+    echo "  手動インストール: $(grep "^[[:space:]]*manual:" "$DATA_FILE" | sed 's/.*: //')"
+    echo "  不明: $(grep "^[[:space:]]*unknown:" "$DATA_FILE" | sed 's/.*: //')"
+    echo "  合計: $(grep "^[[:space:]]*total_programs:" "$DATA_FILE" | sed 's/.*: //')"
+    echo "  最終スキャン: $(grep "^[[:space:]]*last_scan:" "$DATA_FILE" | sed 's/.*: //' | sed 's/"//g')"
 }
 
 # 更新チェック
 check_updates() {
-    info "更新可能なプログラムをチェック中..."
+    info "更新チェックを実行中..."
     
-    # パッケージマネージャー系
-    check_apt_updates
-    check_snap_updates
-    check_npm_updates
-    
-    # Git リポジトリ
-    if [[ -f "$SCRIPT_DIR/git-updater.sh" ]]; then
-        bash "$SCRIPT_DIR/git-updater.sh" --check-only
-    fi
-}
-
-# APT更新チェック
-check_apt_updates() {
     if command -v apt >/dev/null 2>&1; then
-        info "APTパッケージの更新をチェック中..."
+        info "APTパッケージの更新をチェック..."
         apt list --upgradable 2>/dev/null | grep -v "Listing..." | head -10
     fi
-}
-
-# Snap更新チェック
-check_snap_updates() {
+    
     if command -v snap >/dev/null 2>&1; then
-        info "Snapパッケージの更新をチェック中..."
+        info "Snapパッケージの更新をチェック..."
         snap refresh --list 2>/dev/null || true
     fi
-}
-
-# NPM更新チェック
-check_npm_updates() {
-    if command -v npm >/dev/null 2>&1; then
-        info "NPMグローバルパッケージの更新をチェック中..."
-        npm outdated -g --depth=0 2>/dev/null || true
-    fi
-}
-
-# プログラム更新実行
-update_program() {
-    local target="$1"
-    
-    if [[ "$target" == "all" ]]; then
-        update_all
-    else
-        # 特定プログラムの更新
-        local program_info
-        program_info=$(jq -r --arg name "$target" '.programs[] | select(.name == $name)' "$DATA_FILE")
-        
-        if [[ -z "$program_info" ]]; then
-            error "プログラム '$target' が見つかりません"
-            return 1
-        fi
-        
-        local category
-        category=$(echo "$program_info" | jq -r '.category')
-        
-        case "$category" in
-            "apt")
-                sudo apt update && sudo apt upgrade "$target" -y
-                ;;
-            "snap")
-                sudo snap refresh "$target"
-                ;;
-            "npm")
-                npm update -g "$target"
-                ;;
-            "git")
-                if [[ -f "$SCRIPT_DIR/git-updater.sh" ]]; then
-                    bash "$SCRIPT_DIR/git-updater.sh" --update "$target"
-                fi
-                ;;
-            "manual")
-                warn "手動インストールプログラム '$target' は手動で更新する必要があります"
-                ;;
-            *)
-                warn "未知のカテゴリ '$category' です"
-                ;;
-        esac
-    fi
-}
-
-# 全プログラム更新
-update_all() {
-    info "全プログラムの更新を開始..."
-    
-    # APT
-    if command -v apt >/dev/null 2>&1; then
-        info "APTパッケージを更新中..."
-        sudo apt update && sudo apt upgrade -y
-    fi
-    
-    # Snap
-    if command -v snap >/dev/null 2>&1; then
-        info "Snapパッケージを更新中..."
-        sudo snap refresh
-    fi
-    
-    # NPM
-    if command -v npm >/dev/null 2>&1; then
-        info "NPMグローバルパッケージを更新中..."
-        npm update -g
-    fi
-    
-    # Git repositories
-    if [[ -f "$SCRIPT_DIR/git-updater.sh" ]]; then
-        bash "$SCRIPT_DIR/git-updater.sh" --update-all
-    fi
-    
-    success "全プログラムの更新完了"
-}
-
-# 手動プログラム追加
-add_manual() {
-    local path="$1"
-    local name
-    name=$(basename "$path")
-    
-    if [[ ! -f "$path" || ! -x "$path" ]]; then
-        error "実行可能ファイルが見つかりません: $path"
-        return 1
-    fi
-    
-    # データファイルに追加
-    jq --arg name "$name" --arg path "$path" --arg category "manual" \
-       '.programs += [{"name": $name, "path": $path, "category": $category, "added": now|todate}]' \
-       "$DATA_FILE" > "$DATA_FILE.tmp" && mv "$DATA_FILE.tmp" "$DATA_FILE"
-    
-    success "手動プログラムを追加: $name ($path)"
 }
 
 # ヘルプ表示
 show_help() {
     cat << EOF
-Update Manager - 包括的プログラム更新管理ツール
+Update Manager (YAML版) - プログラム更新管理ツール
 
 使用法:
     $0 [オプション]
 
 オプション:
-    --scan              全プログラムをスキャン
-    --list [category]   プログラム一覧表示 (category: all, apt, snap, npm, git, manual)
-    --categories        利用可能なカテゴリ一覧
-    --check-updates     更新可能なプログラムをチェック
-    --update <target>   プログラム更新 (target: all または プログラム名)
-    --add-manual <path> 手動インストールプログラムを追加
+    --scan              プログラムをスキャンしてYAMLに保存
+    --full-scan         詳細スキャン（YAML版検出スクリプト使用）
+    --list [category]   プログラム一覧表示
+    --stats             統計情報表示
+    --check-updates     更新可能プログラムをチェック
     --help              このヘルプを表示
 
 例:
     $0 --scan
     $0 --list apt
+    $0 --stats
     $0 --check-updates
-    $0 --update all
-    $0 --add-manual /usr/local/bin/myapp
+
+データファイル: $DATA_FILE
 
 EOF
 }
@@ -272,30 +330,23 @@ main() {
     
     case "${1:-}" in
         --scan)
-            scan_all
+            scan_programs
+            ;;
+        --full-scan)
+            if [[ -f "$SCRIPT_DIR/detect-all-programs.sh" ]]; then
+                bash "$SCRIPT_DIR/detect-all-programs.sh"
+            else
+                error "詳細スキャンスクリプトが見つかりません"
+            fi
             ;;
         --list)
             list_programs "${2:-all}"
             ;;
-        --categories)
-            list_categories
+        --stats)
+            show_statistics
             ;;
         --check-updates)
             check_updates
-            ;;
-        --update)
-            if [[ -z "${2:-}" ]]; then
-                error "更新対象を指定してください"
-                exit 1
-            fi
-            update_program "$2"
-            ;;
-        --add-manual)
-            if [[ -z "${2:-}" ]]; then
-                error "プログラムパスを指定してください"
-                exit 1
-            fi
-            add_manual "$2"
             ;;
         --help|"")
             show_help
@@ -307,11 +358,5 @@ main() {
             ;;
     esac
 }
-
-# jqの存在チェック
-if ! command -v jq >/dev/null 2>&1; then
-    error "jq が必要です。インストールしてください: sudo apt install jq"
-    exit 1
-fi
 
 main "$@"

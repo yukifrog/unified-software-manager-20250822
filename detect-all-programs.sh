@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# 全実行ファイル検出スクリプト
-# システム内のすべての実行可能プログラムを検出し、分類する
+# 全実行ファイル検出スクリプト (YAML版)
+# システム内のすべての実行可能プログラムをYAMLで管理
 
 set -euo pipefail
 
 CONFIG_DIR="$HOME/.update-manager"
-DATA_FILE="$CONFIG_DIR/programs.json"
-TEMP_FILE="$CONFIG_DIR/programs_temp.json"
+DATA_FILE="$CONFIG_DIR/programs.yaml"
 
 # 色付きメッセージ
 BLUE='\033[0;34m'
@@ -27,85 +26,75 @@ warn() {
     echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-# 初期データ構造を作成
-init_data() {
-    echo '{
-        "programs": [],
-        "last_scan": "",
-        "categories": {
-            "apt": [],
-            "snap": [],
-            "npm": [],
-            "pip": [],
-            "gem": [],
-            "git": [],
-            "manual": [],
-            "unknown": []
-        },
-        "scan_info": {
-            "scanned_paths": [],
-            "total_executables": 0
-        }
-    }' > "$TEMP_FILE"
+# YAML初期構造作成
+init_yaml() {
+    cat > "$DATA_FILE" << EOF
+# プログラム管理データベース
+# 最終更新: $(date -Iseconds)
+
+metadata:
+  last_scan: "$(date -Iseconds)"
+  total_programs: 0
+  created_at: "$(date -Iseconds)"
+
+statistics:
+  apt: 0
+  snap: 0
+  npm: 0
+  pip: 0
+  git: 0
+  manual: 0
+  appimage: 0
+  unknown: 0
+
+programs:
+EOF
 }
 
-# PATH内の実行ファイルを検出
+# PATH内の実行ファイルをスキャン
 scan_path_executables() {
     info "PATH内の実行ファイルをスキャン中..."
     local count=0
+    local temp_results=$(mktemp)
     
     # PATH を分割してスキャン
     echo "$PATH" | tr ':' '\n' | while IFS= read -r dir; do
         if [[ -d "$dir" && -r "$dir" ]]; then
             info "  スキャン中: $dir"
-            find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | while IFS= read -r file; do
-                local name
-                name=$(basename "$file")
+            
+            find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | head -30 | while IFS= read -r file; do
+                local name=$(basename "$file")
+                local category="unknown"
+                local package_name="none"
+                local version="unknown"
                 
-                # 基本情報を収集
-                local size
-                size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "0")
+                # パッケージマネージャー判定
+                if dpkg -S "$file" >/dev/null 2>&1; then
+                    category="apt"
+                    package_name=$(dpkg -S "$file" 2>/dev/null | cut -d: -f1)
+                elif [[ "$file" =~ /snap/ ]]; then
+                    category="snap"
+                elif [[ "$file" =~ /usr/local/ ]]; then
+                    category="manual"
+                fi
                 
-                local modified
-                modified=$(stat -f%m "$file" 2>/dev/null || stat -c%Y "$file" 2>/dev/null || echo "0")
-                modified=$(date -d "@$modified" -Iseconds 2>/dev/null || date -r "$modified" -Iseconds 2>/dev/null || echo "unknown")
+                # バージョン取得試行
+                version=$("$file" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 2>/dev/null || echo "unknown")
                 
-                # JSONエントリを作成
-                local entry
-                entry=$(jq -n \
-                    --arg name "$name" \
-                    --arg path "$file" \
-                    --arg size "$size" \
-                    --arg modified "$modified" \
-                    --arg directory "$dir" \
-                    '{
-                        name: $name,
-                        path: $path,
-                        size: $size|tonumber,
-                        modified: $modified,
-                        directory: $directory,
-                        category: "unknown",
-                        package_manager: null,
-                        version: null,
-                        update_method: null,
-                        metadata: {}
-                    }'
-                )
-                
-                # 一時ファイルに追加
-                jq --argjson entry "$entry" '.programs += [$entry]' "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
+                echo "$name|$file|$category|$package_name|$version" >> "$temp_results"
                 count=$((count + 1))
             done
-            
-            # スキャンしたパスを記録
-            jq --arg dir "$dir" '.scan_info.scanned_paths += [$dir]' "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
         fi
     done
     
-    success "PATH内のスキャン完了"
+    # 結果をYAMLに追加
+    add_programs_to_yaml "$temp_results" "$count"
+    rm -f "$temp_results"
+    
+    success "PATH内のスキャン完了: $count 個検出"
 }
 
-# 特定ディレクトリの手動インストールプログラムを検出
+# 手動インストールディレクトリスキャン
 scan_manual_installs() {
     info "手動インストールプログラムをスキャン中..."
     
@@ -114,140 +103,33 @@ scan_manual_installs() {
         "/opt"
         "$HOME/.local/bin"
         "$HOME/bin"
-        "/usr/local/opt"
     )
+    
+    local temp_results=$(mktemp)
+    local count=0
     
     for dir in "${manual_dirs[@]}"; do
         if [[ -d "$dir" && -r "$dir" ]]; then
             info "  手動インストールディレクトリをスキャン: $dir"
             
             find "$dir" -type f -executable 2>/dev/null | while IFS= read -r file; do
-                local name
-                name=$(basename "$file")
+                local name=$(basename "$file")
                 
-                # 既に登録済みかチェック
-                if jq -e --arg path "$file" '.programs[] | select(.path == $path)' "$TEMP_FILE" >/dev/null 2>&1; then
-                    # 既存エントリをmanualカテゴリに更新
-                    jq --arg path "$file" \
-                       '(.programs[] | select(.path == $path) | .category) = "manual"' \
-                       "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
-                else
-                    # 新しいエントリを追加
-                    local size
-                    size=$(stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo "0")
-                    
-                    local modified
-                    modified=$(stat -f%m "$file" 2>/dev/null || stat -c%Y "$file" 2>/dev/null || echo "0")
-                    modified=$(date -d "@$modified" -Iseconds 2>/dev/null || date -r "$modified" -Iseconds 2>/dev/null || echo "unknown")
-                    
-                    local entry
-                    entry=$(jq -n \
-                        --arg name "$name" \
-                        --arg path "$file" \
-                        --arg size "$size" \
-                        --arg modified "$modified" \
-                        --arg directory "$dir" \
-                        '{
-                            name: $name,
-                            path: $path,
-                            size: $size|tonumber,
-                            modified: $modified,
-                            directory: $directory,
-                            category: "manual",
-                            package_manager: null,
-                            version: null,
-                            update_method: "manual",
-                            metadata: {}
-                        }'
-                    )
-                    
-                    jq --argjson entry "$entry" '.programs += [$entry]' "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
+                # 重複チェック
+                if ! grep -q "^$name|" "$temp_results" 2>/dev/null; then
+                    local version=$("$file" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 2>/dev/null || echo "unknown")
+                    echo "$name|$file|manual|none|$version" >> "$temp_results"
+                    count=$((count + 1))
                 fi
             done
         fi
     done
     
-    success "手動インストールプログラムのスキャン完了"
-}
-
-# Gitリポジトリを検出
-scan_git_repositories() {
-    info "Gitリポジトリをスキャン中..."
+    # 手動プログラムをYAMLに追加
+    add_manual_programs_to_yaml "$temp_results"
+    rm -f "$temp_results"
     
-    # よくあるGitリポジトリのパス
-    local git_search_paths=(
-        "$HOME/src"
-        "$HOME/projects"
-        "$HOME/dev"
-        "$HOME/workspace"
-        "$HOME/git"
-        "$HOME/github"
-        "/usr/local/src"
-        "/opt"
-    )
-    
-    for search_path in "${git_search_paths[@]}"; do
-        if [[ -d "$search_path" ]]; then
-            info "  Gitリポジトリを検索: $search_path"
-            
-            find "$search_path" -name ".git" -type d 2>/dev/null | while IFS= read -r git_dir; do
-                local repo_dir
-                repo_dir=$(dirname "$git_dir")
-                local repo_name
-                repo_name=$(basename "$repo_dir")
-                
-                # 実行可能ファイルがあるかチェック
-                local executables
-                executables=$(find "$repo_dir" -type f -executable ! -path "*/.git/*" 2>/dev/null || true)
-                
-                if [[ -n "$executables" ]]; then
-                    # Gitリポジトリ情報を取得
-                    local remote_url=""
-                    local branch=""
-                    
-                    if cd "$repo_dir" 2>/dev/null; then
-                        remote_url=$(git remote get-url origin 2>/dev/null || echo "")
-                        branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
-                    fi
-                    
-                    # 実行ファイルごとにエントリを作成
-                    echo "$executables" | while IFS= read -r executable; do
-                        local name
-                        name=$(basename "$executable")
-                        
-                        local entry
-                        entry=$(jq -n \
-                            --arg name "$name" \
-                            --arg path "$executable" \
-                            --arg repo_path "$repo_dir" \
-                            --arg remote_url "$remote_url" \
-                            --arg branch "$branch" \
-                            '{
-                                name: $name,
-                                path: $path,
-                                size: 0,
-                                modified: "unknown",
-                                directory: ($path | split("/")[:-1] | join("/")),
-                                category: "git",
-                                package_manager: "git",
-                                version: null,
-                                update_method: "git_pull",
-                                metadata: {
-                                    repo_path: $repo_path,
-                                    remote_url: $remote_url,
-                                    branch: $branch
-                                }
-                            }'
-                        )
-                        
-                        jq --argjson entry "$entry" '.programs += [$entry]' "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
-                    done
-                fi
-            done
-        fi
-    done
-    
-    success "Gitリポジトリのスキャン完了"
+    success "手動インストールプログラムのスキャン完了: $count 個検出"
 }
 
 # AppImageファイルを検出
@@ -259,96 +141,151 @@ scan_appimages() {
         "$HOME/Downloads"
         "$HOME/.local/bin"
         "/opt"
-        "$HOME/AppImages"
     )
+    
+    local count=0
     
     for path in "${appimage_paths[@]}"; do
         if [[ -d "$path" ]]; then
             find "$path" -name "*.AppImage" -type f 2>/dev/null | while IFS= read -r appimage; do
-                local name
-                name=$(basename "$appimage" .AppImage)
-                
-                local size
-                size=$(stat -f%z "$appimage" 2>/dev/null || stat -c%s "$appimage" 2>/dev/null || echo "0")
-                
-                local entry
-                entry=$(jq -n \
-                    --arg name "$name" \
-                    --arg path "$appimage" \
-                    --arg size "$size" \
-                    '{
-                        name: $name,
-                        path: $path,
-                        size: $size|tonumber,
-                        modified: "unknown",
-                        directory: ($path | split("/")[:-1] | join("/")),
-                        category: "appimage",
-                        package_manager: null,
-                        version: null,
-                        update_method: "manual",
-                        metadata: {
-                            type: "AppImage"
-                        }
-                    }'
-                )
-                
-                jq --argjson entry "$entry" '.programs += [$entry]' "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
+                local name=$(basename "$appimage" .AppImage)
+                add_appimage_to_yaml "$name" "$appimage"
+                count=$((count + 1))
             done
         fi
     done
     
-    success "AppImageファイルのスキャン完了"
+    if [[ $count -gt 0 ]]; then
+        success "AppImageファイルのスキャン完了: $count 個検出"
+    else
+        info "AppImageファイルは見つかりませんでした"
+    fi
+}
+
+# プログラムをYAMLに追加
+add_programs_to_yaml() {
+    local results_file="$1"
+    local total_count="$2"
+    
+    while IFS='|' read -r name path category package version; do
+        if [[ -n "$name" ]]; then
+            add_program_to_yaml "$name" "$path" "$category" "$package" "$version"
+        fi
+    done < "$results_file"
+}
+
+# 手動プログラムをYAMLに追加
+add_manual_programs_to_yaml() {
+    local results_file="$1"
+    
+    while IFS='|' read -r name path category package version; do
+        if [[ -n "$name" ]]; then
+            add_program_to_yaml "$name" "$path" "manual" "none" "$version"
+        fi
+    done < "$results_file"
+}
+
+# 単一プログラムをYAMLに追加
+add_program_to_yaml() {
+    local name="$1"
+    local path="$2"
+    local category="$3"
+    local package="$4"
+    local version="$5"
+    
+    local update_method=$(get_update_method "$category" "$name")
+    
+    cat >> "$DATA_FILE" << EOF
+  $name:
+    path: "$path"
+    category: "$category"
+    package: "$package"
+    version: "$version"
+    last_checked: "$(date -Iseconds)"
+    update_method: "$update_method"
+    size: $(stat -c%s "$path" 2>/dev/null || echo 0)
+    modified: "$(date -r "$path" -Iseconds 2>/dev/null || echo "unknown")"
+EOF
+}
+
+# AppImageをYAMLに追加
+add_appimage_to_yaml() {
+    local name="$1"
+    local path="$2"
+    
+    cat >> "$DATA_FILE" << EOF
+  $name:
+    path: "$path"
+    category: "appimage"
+    package: "none"
+    version: "unknown"
+    last_checked: "$(date -Iseconds)"
+    update_method: "manual download and replace"
+    size: $(stat -c%s "$path" 2>/dev/null || echo 0)
+    modified: "$(date -r "$path" -Iseconds 2>/dev/null || echo "unknown")"
+    type: "AppImage"
+EOF
+}
+
+# 更新方法を決定
+get_update_method() {
+    local category="$1"
+    local name="$2"
+    
+    case "$category" in
+        "apt") echo "apt upgrade $name" ;;
+        "snap") echo "snap refresh $name" ;;
+        "npm") echo "npm update -g $name" ;;
+        "pip") echo "pip install --upgrade $name" ;;
+        "manual") echo "manual update required" ;;
+        "appimage") echo "download latest AppImage" ;;
+        *) echo "unknown update method" ;;
+    esac
 }
 
 # 統計情報を更新
 update_statistics() {
     info "統計情報を更新中..."
     
-    local total_count
-    total_count=$(jq '.programs | length' "$TEMP_FILE")
-    
-    # カテゴリ別にプログラムを分類
-    jq '.programs | group_by(.category) | map({key: .[0].category, value: map(.name)}) | from_entries' "$TEMP_FILE" > "$TEMP_FILE.categories"
+    # 各カテゴリの数をカウント
+    local apt_count=$(grep -c "category: \"apt\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local snap_count=$(grep -c "category: \"snap\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local manual_count=$(grep -c "category: \"manual\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local appimage_count=$(grep -c "category: \"appimage\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local unknown_count=$(grep -c "category: \"unknown\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local total_count=$((apt_count + snap_count + manual_count + appimage_count + unknown_count))
     
     # 統計情報を更新
-    jq --argjson total "$total_count" \
-       --slurpfile categories "$TEMP_FILE.categories" \
-       '.scan_info.total_executables = $total | .categories = $categories[0] | .last_scan = now|todate' \
-       "$TEMP_FILE" > "$TEMP_FILE.tmp" && mv "$TEMP_FILE.tmp" "$TEMP_FILE"
+    sed -i "s/apt: .*/apt: $apt_count/" "$DATA_FILE"
+    sed -i "s/snap: .*/snap: $snap_count/" "$DATA_FILE"
+    sed -i "s/manual: .*/manual: $manual_count/" "$DATA_FILE"
+    sed -i "s/appimage: .*/appimage: $appimage_count/" "$DATA_FILE"
+    sed -i "s/unknown: .*/unknown: $unknown_count/" "$DATA_FILE"
+    sed -i "s/total_programs: .*/total_programs: $total_count/" "$DATA_FILE"
     
-    rm -f "$TEMP_FILE.categories"
-    success "統計情報更新完了: 合計 $total_count 個のプログラムを検出"
+    success "統計情報更新完了: 合計 $total_count 個のプログラム"
 }
 
 # メイン実行関数
 main() {
-    info "全実行ファイルの検出を開始..."
+    info "YAML版 全実行ファイル検出を開始..."
     
     # 設定ディレクトリ作成
     mkdir -p "$CONFIG_DIR"
     
-    # 初期データ構造作成
-    init_data
+    # 初期YAML構造作成
+    init_yaml
     
     # 各種スキャン実行
     scan_path_executables
     scan_manual_installs
-    scan_git_repositories
     scan_appimages
     
     # 統計情報更新
     update_statistics
     
-    # データファイルに保存
-    mv "$TEMP_FILE" "$DATA_FILE"
-    
-    success "全実行ファイルの検出完了: $DATA_FILE"
+    success "全実行ファイル検出完了: $DATA_FILE"
+    info "GitHubで美しく表示される人間に読みやすいYAML形式で保存されました"
 }
-
-# jqの存在チェック
-if ! command -v jq >/dev/null 2>&1; then
-    echo "Error: jq が必要です。インストールしてください: sudo apt install jq" >&2
-    exit 1
-fi
 
 main "$@"

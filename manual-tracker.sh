@@ -463,10 +463,10 @@ main() {
     esac
 }
 
-# jqの存在チェック
-if ! command -v jq >/dev/null 2>&1; then
-    error "jq が必要です。インストールしてください: sudo apt install jq"
-    exit 1
-fi
+# YAML版では jq は不要
+# if ! command -v jq >/dev/null 2>&1; then
+#     error "jq が必要です。インストールしてください: sudo apt install jq"
+#     exit 1
+# fi
 
 main "$@"

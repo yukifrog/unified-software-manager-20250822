@@ -38,9 +38,10 @@ check_dependencies() {
     local missing_deps=()
     
     # 必須依存関係
-    if ! command -v jq >/dev/null 2>&1; then
-        missing_deps+=("jq")
-    fi
+    # jqは不要になりました（YAML版では使用しない）
+    # if ! command -v jq >/dev/null 2>&1; then
+    #     missing_deps+=("jq")
+    # fi
     
     if ! command -v git >/dev/null 2>&1; then
         missing_deps+=("git")
@@ -110,27 +111,33 @@ make_executable() {
 create_initial_data() {
     info "初期データファイルを作成中..."
     
-    local data_file="$CONFIG_DIR/programs.json"
+    local data_file="$CONFIG_DIR/programs.yaml"
     
     if [[ ! -f "$data_file" ]]; then
-        cat > "$data_file" << 'EOF'
-{
-  "programs": [],
-  "last_scan": "",
-  "categories": {},
-  "scan_info": {
-    "scanned_paths": [],
-    "total_executables": 0
-  },
-  "statistics": {},
-  "created_at": ""
-}
+        cat > "$data_file" << EOF
+# プログラム管理データベース
+# 最終更新: $(date -Iseconds)
+
+metadata:
+  last_scan: "$(date -Iseconds)"
+  total_programs: 0
+  created_at: "$(date -Iseconds)"
+
+statistics:
+  apt: 0
+  snap: 0
+  npm: 0
+  pip: 0
+  git: 0
+  manual: 0
+  appimage: 0
+  unknown: 0
+
+programs: {}
 EOF
-        # 作成日時を設定
-        jq --arg date "$(date -Iseconds)" '.created_at = $date' "$data_file" > "$data_file.tmp" && mv "$data_file.tmp" "$data_file"
-        success "初期データファイルを作成: $data_file"
+        success "初期YAMLデータファイルを作成: $data_file"
     else
-        info "データファイルは既に存在します: $data_file"
+        info "YAMLデータファイルは既に存在します: $data_file"
     fi
 }
 
