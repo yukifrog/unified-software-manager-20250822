@@ -1,0 +1,43 @@
+# テスト用ファイル（本物のjqが必要）
+/jq
+
+# ローカル設定・データファイル（個人情報を含む可能性）
+*.local
+*.private
+config.local.*
+secrets.*
+
+# ログファイル
+*.log
+logs/
+
+# 一時ファイル
+*.tmp
+*.temp
+*~
+.DS_Store
+Thumbs.db
+
+# バックアップファイル
+*.backup
+*.bak
+backups/
+
+# テスト出力
+test-output/
+*.test
+
+# IDE/エディタ設定ファイル
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS生成ファイル
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
