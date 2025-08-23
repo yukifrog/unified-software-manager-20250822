@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# App Updater セットアップスクリプト
+# Unified Software Manager Manager セットアップスクリプト
 # 初期設定と依存関係のインストールを行う
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_DIR="$HOME/.update-manager"
+CONFIG_DIR="$HOME/.unified-software-manager-manager"
 
 # 色付きメッセージ
 GREEN='\033[0;32m'
@@ -90,9 +90,8 @@ make_executable() {
     info "スクリプトを実行可能にしています..."
     
     local scripts=(
-        "update-manager.sh"
+        "unified-software-manager-manager.sh"
         "detect-all-programs.sh"
-        "classify-update-method.sh"
         "git-updater.sh"
         "manual-tracker.sh"
     )
@@ -159,9 +158,9 @@ create_symlinks() {
         fi
         
         # メインスクリプトのリンク作成
-        if [[ -f "$SCRIPT_DIR/update-manager.sh" ]]; then
-            ln -sf "$SCRIPT_DIR/update-manager.sh" "$bin_dir/app-updater"
-            success "シンボリックリンクを作成: app-updater → $SCRIPT_DIR/update-manager.sh"
+        if [[ -f "$SCRIPT_DIR/unified-software-manager-manager.sh" ]]; then
+            ln -sf "$SCRIPT_DIR/unified-software-manager-manager.sh" "$bin_dir/unified-software-manager-manager"
+            success "シンボリックリンクを作成: unified-software-manager-manager → $SCRIPT_DIR/unified-software-manager-manager.sh"
         fi
         
         # サブスクリプトのリンク作成
@@ -182,20 +181,20 @@ create_symlinks() {
 
 # セットアップ情報表示
 show_setup_info() {
-    success "App Updater セットアップ完了!"
+    success "Unified Software Manager Manager セットアップ完了!"
     echo
     info "使用開始手順:"
     echo "  1. 初回スキャン実行:"
-    echo "     ./update-manager.sh --scan"
+    echo "     ./unified-software-manager-manager.sh --full-scan"
     echo
     echo "  2. プログラム一覧確認:"
-    echo "     ./update-manager.sh --list"
+    echo "     ./unified-software-manager-manager.sh --list"
     echo
     echo "  3. 更新チェック:"
-    echo "     ./update-manager.sh --check-updates"
+    echo "     ./unified-software-manager-manager.sh --check-updates"
     echo
-    echo "  4. 全プログラム更新:"
-    echo "     ./update-manager.sh --update all"
+    echo "  4. 統計情報確認:"
+    echo "     ./unified-software-manager-manager.sh --stats"
     echo
     info "詳細な使用方法は README.md をご確認ください。"
 }
@@ -203,7 +202,7 @@ show_setup_info() {
 # 使用方法表示
 show_help() {
     cat << EOF
-App Updater セットアップスクリプト
+Unified Software Manager Manager セットアップスクリプト
 
 使用法:
     $0 [オプション]
@@ -224,7 +223,7 @@ EOF
 # メイン処理
 main() {
     echo "=========================================="
-    echo "App Updater セットアップ"
+    echo "Unified Software Manager Manager セットアップ"
     echo "=========================================="
     echo
     

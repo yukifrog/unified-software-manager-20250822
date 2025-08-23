@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Update Manager - YAML版
-# YAMLファイルでプログラム情報を管理
+# Unified Software Manager Manager
+# 統合ソフトウェア管理ツール管理ツール - YAMLファイルでプログラム情報を管理
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_DIR="$HOME/.update-manager"
+CONFIG_DIR="$HOME/.unified-software-manager-manager"
 DATA_FILE="$CONFIG_DIR/programs.yaml"
 LOG_FILE="$CONFIG_DIR/update.log"
 
@@ -300,7 +300,7 @@ check_updates() {
 # ヘルプ表示
 show_help() {
     cat << EOF
-Update Manager (YAML版) - プログラム更新管理ツール
+Unified Software Manager Manager - 統合ソフトウェア管理ツール管理ツール
 
 使用法:
     $0 [オプション]

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 全実行ファイル検出スクリプト (YAML版)
-# システム内のすべての実行可能プログラムをYAMLで管理
+# Unified Software Manager Manager - 全実行ファイル検出スクリプト
+# 統合ソフトウェア管理ツール管理ツール - システム内のすべての実行可能プログラムをYAMLで管理
 
 set -euo pipefail
 
-CONFIG_DIR="$HOME/.update-manager"
+CONFIG_DIR="$HOME/.unified-software-manager-manager"
 DATA_FILE="$CONFIG_DIR/programs.yaml"
 
 # 色付きメッセージ
@@ -268,7 +268,7 @@ update_statistics() {
 
 # メイン実行関数
 main() {
-    info "YAML版 全実行ファイル検出を開始..."
+    info "Unified Software Manager Manager 全実行ファイル検出を開始..."
     
     # 設定ディレクトリ作成
     mkdir -p "$CONFIG_DIR"

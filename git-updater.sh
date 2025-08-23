@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Git リポジトリ更新スクリプト
-# Gitで管理されたプログラムの更新を自動化
+# Unified Software Manager Manager - Git リポジトリ更新スクリプト
+# 統合ソフトウェア管理ツール管理ツール - Gitで管理されたプログラムの更新を自動化
 
 set -euo pipefail
 
-CONFIG_DIR="$HOME/.update-manager"
-DATA_FILE="$CONFIG_DIR/programs.json"
+CONFIG_DIR="$HOME/.unified-software-manager-manager"
+DATA_FILE="$CONFIG_DIR/programs.yaml"
 GIT_LOG_FILE="$CONFIG_DIR/git-updates.log"
 
 # 色付きメッセージ
@@ -370,7 +370,7 @@ update_all_repos() {
 # ヘルプ表示
 show_help() {
     cat << EOF
-Git Updater - Git リポジトリ更新管理ツール
+Unified Software Manager Manager - Git リポジトリ更新管理ツール
 
 使用法:
     $0 [オプション] [引数]

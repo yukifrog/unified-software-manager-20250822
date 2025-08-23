@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 手動インストール追跡スクリプト
-# 手動でインストールされたプログラムの更新情報を追跡・管理
+# Unified Software Manager Manager - 手動インストール追跡スクリプト
+# 統合ソフトウェア管理ツール管理ツール - 手動でインストールされたプログラムの更新情報を追跡・管理
 
 set -euo pipefail
 
-CONFIG_DIR="$HOME/.update-manager"
-DATA_FILE="$CONFIG_DIR/programs.json"
+CONFIG_DIR="$HOME/.unified-software-manager-manager"
+DATA_FILE="$CONFIG_DIR/programs.yaml"
 MANUAL_CONFIG="$CONFIG_DIR/manual-config.json"
 CHECKSUM_FILE="$CONFIG_DIR/checksums.txt"
 
@@ -391,7 +391,7 @@ show_tracking_info() {
 # ヘルプ表示
 show_help() {
     cat << EOF
-Manual Tracker - 手動インストールプログラム追跡ツール
+Unified Software Manager Manager - 手動インストールプログラム追跡ツール
 
 使用法:
     $0 [オプション] [引数]

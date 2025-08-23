@@ -1,6 +1,6 @@
-# App Updater - 包括的プログラム更新管理ツール
+# Unified Software Manager Manager - 統合ソフトウェア管理ツール管理ツール
 
-システム内のすべての実行可能プログラムを検出・分類し、適切なアップデータを使用して統合管理するツールセットです。
+統合ソフトウェア管理ツール管理ツール - システム内のすべての実行可能プログラムを検出・分類し、適切なアップデータを使用して統合管理するツールセットです。
 
 ## 🆕 YAML形式対応
 
@@ -35,37 +35,37 @@ chmod +x *.sh
 
 ### 1. 初回スキャン
 ```bash
-./update-manager.sh --scan
+./unified-software-manager-manager.sh --scan
 ```
 
 ### 2. プログラム一覧表示
 ```bash
 # 全プログラム
-./update-manager.sh --list
+./unified-software-manager-manager.sh --list
 
 # カテゴリ別
-./update-manager.sh --list apt
-./update-manager.sh --list git
-./update-manager.sh --list manual
+./unified-software-manager-manager.sh --list apt
+./unified-software-manager-manager.sh --list git
+./unified-software-manager-manager.sh --list manual
 ```
 
 ### 3. 更新チェック
 ```bash
-./update-manager.sh --check-updates
+./unified-software-manager-manager.sh --check-updates
 ```
 
 ### 4. プログラム更新
 ```bash
 # 全プログラム更新
-./update-manager.sh --update all
+./unified-software-manager-manager.sh --update all
 
 # 特定プログラム更新
-./update-manager.sh --update プログラム名
+./unified-software-manager-manager.sh --update プログラム名
 ```
 
 ## 各スクリプトの詳細
 
-### update-manager.sh (メインスクリプト)
+### unified-software-manager-manager.sh (メインスクリプト)
 全体の統合管理を行うメインスクリプトです。
 
 **主な機能:**
@@ -115,7 +115,7 @@ Git管理されたプログラムの更新を自動化します。
 ## ディレクトリ構造
 
 ```
-~/.update-manager/
+~/.unified-software-manager-manager/
 ├── programs.yaml         # プログラム情報データベース（YAML形式）
 ├── manual-config.json    # 手動更新設定
 ├── checksums.txt         # ファイルチェックサム履歴
@@ -127,7 +127,7 @@ Git管理されたプログラムの更新を自動化します。
 
 ## 設定ファイル
 
-### ~/.update-manager/manual-config.json
+### ~/.unified-software-manager-manager/manual-config.json
 手動インストールプログラムの更新ソース設定:
 
 ```json
@@ -186,13 +186,13 @@ sudo apt install jq
 ### 権限エラーが発生する場合
 一部のプログラム更新には管理者権限が必要です：
 ```bash
-sudo ./update-manager.sh --update all
+sudo ./unified-software-manager-manager.sh --update all
 ```
 
 ### データファイルが見つからない場合
 初回スキャンを実行してください：
 ```bash
-./update-manager.sh --scan
+./unified-software-manager-manager.sh --scan
 ```
 
 ## ライセンス
