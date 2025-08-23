@@ -1,0 +1,85 @@
+# GitHub Dependabot configuration for monitoring tool releases
+# This automatically creates PRs when new versions are released
+
+version: 2
+
+updates:
+  # Monitor Node.js/npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/monitoring/nodejs-tools"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(nodejs-tools)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "nodejs-tools"
+      - "automated-pr"
+
+  # Monitor Python/pip dependencies  
+  - package-ecosystem: "pip"
+    directory: "/monitoring/python-tools"
+    schedule:
+      interval: "daily" 
+      time: "09:30"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(python-tools)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "python-tools"
+      - "automated-pr"
+
+  # Monitor Ruby/gem dependencies
+  - package-ecosystem: "bundler"
+    directory: "/monitoring/ruby-tools"
+    schedule:
+      interval: "daily"
+      time: "10:00" 
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(ruby-tools)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "ruby-tools"
+      - "automated-pr"
+
+  # Monitor Go modules
+  - package-ecosystem: "gomod"
+    directory: "/monitoring/go-tools"
+    schedule:
+      interval: "daily"
+      time: "10:30"
+      timezone: "Asia/Tokyo" 
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps(go-tools)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "go-tools"
+      - "automated-pr"
+
+  # Monitor GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    commit-message:
+      prefix: "deps(actions)"
+      include: "scope"
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "automated-pr"

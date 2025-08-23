@@ -312,12 +312,14 @@ Unified Software Manager Manager - 統合ソフトウェア管理ツール管理
     --stats             統計情報表示
     --check-updates     更新可能プログラムをチェック
     --help              このヘルプを表示
+    --generate-monitoring  GitHub Dependabot監視ファイルを生成
 
 例:
     $0 --scan
     $0 --list apt
     $0 --stats
     $0 --check-updates
+    $0 --generate-monitoring
 
 データファイル: $DATA_FILE
 
@@ -347,6 +349,13 @@ main() {
             ;;
         --check-updates)
             check_updates
+            ;;
+        --generate-monitoring)
+            if [[ -f "$SCRIPT_DIR/dependabot-generator.sh" ]]; then
+                bash "$SCRIPT_DIR/dependabot-generator.sh" --generate
+            else
+                error "dependabot-generator.sh が見つかりません"
+            fi
             ;;
         --help|"")
             show_help

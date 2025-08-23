@@ -1,0 +1,27 @@
+# Requirements file for monitoring DevOps tools via Dependabot
+# This is a monitoring file - not for actual installation
+
+# gh - https://github.com/cli/cli
+github-cli==2.78.0
+
+# docker - https://github.com/docker/cli
+docker==20.10.21
+
+# kubectl - https://github.com/kubernetes/kubernetes
+kubectl==1.25.4
+
+# terraform - https://github.com/hashicorp/terraform
+terraform==1.3.0
+
+# jq - https://github.com/jqlang/jq
+jq==1.6
+
+# node - https://github.com/nodejs/node
+node==18.19.0
+
+# code - https://github.com/microsoft/vscode
+code==1.85.1
+
+# ollama - https://github.com/ollama/ollama
+ollama==0.1.17
+
