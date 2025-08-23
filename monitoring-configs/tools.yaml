@@ -1,0 +1,224 @@
+# ツール自動更新監視設定
+# GitHub Actions で日次実行され、バージョン更新時に自動PR作成
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2025-08-23"
+  description: "Dependabot対象外ツールの自動更新設定"
+
+# GitHub API設定
+github_api:
+  rate_limit_per_hour: 5000  # 認証済みAPI制限
+  cache_duration_hours: 6    # バージョン情報キャッシュ時間
+
+# 監視対象ツール定義
+tools:
+  # Kubernetes関連
+  kubectl:
+    current_version: "1.25.4"
+    github_repo: "kubernetes/kubernetes"
+    update_method: "binary_download"
+    install_command: "curl -LO https://dl.k8s.io/release/v{version}/bin/linux/amd64/kubectl"
+    category: "kubernetes"
+    priority: "high"
+    
+  helm:
+    current_version: "3.10.0"
+    github_repo: "helm/helm"
+    update_method: "binary_download"
+    category: "kubernetes"
+    priority: "high"
+
+  kind:
+    current_version: "0.17.0"
+    github_repo: "kubernetes-sigs/kind"
+    update_method: "binary_download"
+    category: "kubernetes"
+    priority: "medium"
+
+  k9s:
+    current_version: "0.26.0"
+    github_repo: "derailed/k9s"
+    update_method: "binary_download"
+    category: "kubernetes"
+    priority: "medium"
+
+  # HashiCorp Tools
+  terraform:
+    current_version: "1.3.0"
+    github_repo: "hashicorp/terraform"
+    update_method: "binary_download"
+    category: "infrastructure"
+    priority: "high"
+    
+  vault:
+    current_version: "1.12.0"
+    github_repo: "hashicorp/vault"
+    update_method: "binary_download"
+    category: "infrastructure"
+    priority: "medium"
+
+  consul:
+    current_version: "1.14.0"
+    github_repo: "hashicorp/consul"
+    update_method: "binary_download"
+    category: "infrastructure"
+    priority: "low"
+
+  nomad:
+    current_version: "1.4.0"
+    github_repo: "hashicorp/nomad"
+    update_method: "binary_download"
+    category: "infrastructure"
+    priority: "low"
+
+  # CLI Tools
+  gh:
+    current_version: "2.78.0"
+    github_repo: "cli/cli"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "high"
+
+  jq:
+    current_version: "1.6"
+    github_repo: "jqlang/jq"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "high"
+
+  yq:
+    current_version: "4.25.0"
+    github_repo: "mikefarah/yq"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "medium"
+
+  fzf:
+    current_version: "0.35.0"
+    github_repo: "junegunn/fzf"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "medium"
+
+  # Modern CLI replacements
+  bat:
+    current_version: "0.22.0"
+    github_repo: "sharkdp/bat"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "low"
+
+  fd:
+    current_version: "8.4.0"
+    github_repo: "sharkdp/fd"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "low"
+
+  ripgrep:
+    current_version: "13.0.0"
+    github_repo: "BurntSushi/ripgrep"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "medium"
+
+  exa:
+    current_version: "0.10.1"
+    github_repo: "ogham/exa"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "low"
+
+  delta:
+    current_version: "0.15.0"
+    github_repo: "dandavison/delta"
+    update_method: "binary_download"
+    category: "cli"
+    priority: "low"
+
+  # Development Tools
+  lazygit:
+    current_version: "0.36.0"
+    github_repo: "jesseduffield/lazygit"
+    update_method: "binary_download"
+    category: "development"
+    priority: "medium"
+
+  hugo:
+    current_version: "0.108.0"
+    github_repo: "gohugoio/hugo"
+    update_method: "binary_download"
+    category: "development"
+    priority: "low"
+
+  # Container Tools
+  dive:
+    current_version: "0.10.0"
+    github_repo: "wagoodman/dive"
+    update_method: "binary_download"
+    category: "containers"
+    priority: "medium"
+
+  ctop:
+    current_version: "0.7.7"
+    github_repo: "bcicen/ctop"
+    update_method: "binary_download"
+    category: "containers"
+    priority: "low"
+
+  # Language Runtimes (version manager managed)
+  nodejs:
+    current_version: "18.19.0"
+    github_repo: "nodejs/node"
+    update_method: "version_manager"
+    version_manager: "asdf"
+    category: "runtime"
+    priority: "high"
+
+  golang:
+    current_version: "1.19.0"
+    github_repo: "golang/go"
+    update_method: "version_manager"
+    version_manager: "asdf"
+    category: "runtime"
+    priority: "high"
+
+  python:
+    current_version: "3.11.0"
+    github_repo: "python/cpython"
+    update_method: "version_manager"
+    version_manager: "asdf"
+    category: "runtime"
+    priority: "high"
+
+  rust:
+    current_version: "1.65.0"
+    github_repo: "rust-lang/rust"
+    update_method: "version_manager"
+    version_manager: "asdf"
+    category: "runtime"
+    priority: "medium"
+
+  # AI/ML Tools
+  ollama:
+    current_version: "0.1.17"
+    github_repo: "ollama/ollama"
+    update_method: "binary_download"
+    category: "ai"
+    priority: "medium"
+
+# PR作成設定
+pr_settings:
+  branch_prefix: "deps/update-"
+  title_format: "deps: update {tool} from v{old_version} to v{new_version}"
+  labels:
+    - "dependencies"
+    - "automated-pr"
+  draft: true  # Draft PRとして作成（手動レビュー推奨）
+  auto_merge: false
+
+# 通知設定
+notifications:
+  create_issues: false  # Issue作成は無効
+  github_notifications: true  # GitHub標準通知を使用
