@@ -313,6 +313,8 @@ Unified Software Manager Manager - 統合ソフトウェア管理ツール管理
     --check-updates     更新可能プログラムをチェック
     --help              このヘルプを表示
     --generate-monitoring  GitHub Dependabot監視ファイルを生成
+    --auto-update          自動更新PR作成システムの実行
+    --check-versions       バージョンチェッカーを実行
 
 例:
     $0 --scan
@@ -320,6 +322,8 @@ Unified Software Manager Manager - 統合ソフトウェア管理ツール管理
     $0 --stats
     $0 --check-updates
     $0 --generate-monitoring
+    $0 --auto-update
+    $0 --check-versions
 
 データファイル: $DATA_FILE
 
@@ -355,6 +359,35 @@ main() {
                 bash "$SCRIPT_DIR/dependabot-generator.sh" --generate
             else
                 error "dependabot-generator.sh が見つかりません"
+            fi
+            ;;
+        --auto-update)
+            info "自動更新PR作成システムを実行中..."
+            if [[ -f "$SCRIPT_DIR/version-checker.sh" ]]; then
+                # バージョンチェック実行
+                bash "$SCRIPT_DIR/version-checker.sh" --check-all --output-format=json > /tmp/update-results.json
+                
+                if [[ -s /tmp/update-results.json ]]; then
+                    info "更新が必要なツールを検出 - PR作成中..."
+                    if [[ -f "$SCRIPT_DIR/pr-creator.sh" ]]; then
+                        bash "$SCRIPT_DIR/pr-creator.sh" --input-file=/tmp/update-results.json
+                    else
+                        error "pr-creator.sh が見つかりません"
+                    fi
+                else
+                    success "すべてのツールが最新版です"
+                fi
+                
+                rm -f /tmp/update-results.json
+            else
+                error "version-checker.sh が見つかりません"
+            fi
+            ;;
+        --check-versions)
+            if [[ -f "$SCRIPT_DIR/version-checker.sh" ]]; then
+                bash "$SCRIPT_DIR/version-checker.sh" --check-all "${2:-}"
+            else
+                error "version-checker.sh が見つかりません"
             fi
             ;;
         --help|"")
