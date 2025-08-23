@@ -23,5 +23,5 @@ node==18.19.0
 code==1.85.1
 
 # ollama - https://github.com/ollama/ollama
-ollama==0.1.17
+ollama==0.5.3
 
