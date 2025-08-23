@@ -1,204 +1,121 @@
-# App Updater - 包括的プログラム更新管理ツール
+# App Updater - 統合プログラム更新管理ツールスイート
 
-システム内のすべての実行可能プログラムを検出・分類し、適切なアップデータを使用して統合管理するツールセットです。
+**⚠️ 注意: このプロジェクトは現在開発途上です。一部の機能は未実装または未統合です。**
 
-## 🆕 YAML形式対応
+このリポジトリは、システム内のプログラムを検出し、更新を管理するための一連のスクリプト（ツールスイート）を提供します。YAML形式でのデータ管理へ移行中ですが、一部のスクリプトは古いJSON形式に依存しており、完全には統合されていません。
 
-- **人間が読みやすい** YAML形式でデータ管理
-- **GitHubで美しく表示** されるシンタックスハイライト
-- **追加ツール不要** (jq等の外部依存なし)
-- **構造化された** 階層データ管理
+## ✨ 主な特徴
 
-## 概要
+- **多彩なプログラム検出**: パッケージマネージャー（apt, snap）、手動インストール、AppImageなどを検出。
+- **YAMLベースのデータ管理**: 人間が読みやすく、Gitとの相性が良いYAML形式でプログラム情報を管理 (`update-manager.sh` 使用時)。
+- **スタンドアロンツール**: Gitリポジトリや手動インストールされたバイナリを個別に管理する強力なスクリプトを提供。
 
-このツールは以下のプログラム管理方式に対応しています：
+## ❗ 現在のステータスと既知の問題
 
-- **パッケージマネージャー**: apt, snap, npm, pip, gem, cargo, brew, flatpak
-- **手動バイナリ**: `/usr/local/bin`, `~/.local/bin`, `~/bin`の実行ファイル
-- **Gitリポジトリ**: `git pull`で更新可能なローカルクローン
-- **ダウンロードファイル**: AppImage, .deb, .tar.gz等の手動インストール
-- **ソースビルド**: `make`, `configure`スクリプト付きディレクトリ
+このツールスイートは、統一された単一のアプリケーションとしてではなく、**複数の独立したスクリプトの集合体**として機能します。
 
-## インストール
+- **データ形式の非互換性**:
+    - メインの`update-manager.sh`はデータを **`~/.update-manager/programs.yaml`** に保存します。
+    - `git-updater.sh`と`manual-tracker.sh`は **`~/.update-manager/programs.json`** を読み込もうとします。このファイルは現在自動生成されません。
+- **機能の未統合**: `update-manager.sh`は、`git-updater.sh`や`manual-tracker.sh`の機能を呼び出すことができません。これらは個別に実行する必要があります。
+- **一部機能の未実装**: `update-manager.sh`の`--update`オプションなど、READMEの過去のバージョンに記載されていた機能はまだ実装されていません。
 
-1. 必要な依存関係をインストール:
-```bash
-sudo apt install jq git curl
-```
+## 🛠️ インストールとセットアップ
 
-2. スクリプトを実行可能にする:
-```bash
-chmod +x *.sh
-```
+1.  **リポジトリをクローン:**
+    ```bash
+    git clone https://github.com/your-username/app-updater.git
+    cd app-updater
+    ```
 
-## 基本的な使い方
+2.  **セットアップスクリプトを実行:**
+    このスクリプトは、依存関係（`git`, `curl`）をチェックし、各スクリプトに実行権限を付与します。
+    ```bash
+    ./setup.sh
+    ```
+    必要に応じて、`~/.local/bin`にシンボリックリンクを作成することもできます。
+    ```bash
+    ./setup.sh --symlinks
+    ```
 
-### 1. 初回スキャン
-```bash
-./update-manager.sh --scan
-```
+## 📜 各スクリプトの使用法
 
-### 2. プログラム一覧表示
-```bash
-# 全プログラム
-./update-manager.sh --list
+### 1. `update-manager.sh` (メインスキャン＆リスト管理)
 
-# カテゴリ別
-./update-manager.sh --list apt
-./update-manager.sh --list git
-./update-manager.sh --list manual
-```
-
-### 3. 更新チェック
-```bash
-./update-manager.sh --check-updates
-```
-
-### 4. プログラム更新
-```bash
-# 全プログラム更新
-./update-manager.sh --update all
-
-# 特定プログラム更新
-./update-manager.sh --update プログラム名
-```
-
-## 各スクリプトの詳細
-
-### update-manager.sh (メインスクリプト)
-全体の統合管理を行うメインスクリプトです。
+システムのプログラムをスキャンし、`programs.yaml`ファイルを生成・管理する中心的なスクリプトです。
 
 **主な機能:**
-- `--scan`: 全プログラムスキャン
-- `--list [category]`: プログラム一覧表示
-- `--categories`: カテゴリ一覧
-- `--check-updates`: 更新チェック
-- `--update <target>`: プログラム更新
-- `--add-manual <path>`: 手動プログラム追加
+- **初回スキャン (推奨):**
+  `detect-all-programs.sh`を呼び出し、詳細なスキャンを実行します。
+  ```bash
+  ./update-manager.sh --full-scan
+  ```
+- **プログラム一覧表示:**
+  ```bash
+  # 全プログラム
+  ./update-manager.sh --list
 
-### detect-all-programs.sh
-システム内の実行可能ファイルを検出・分類します。
+  # カテゴリ別 (例: apt)
+  ./update-manager.sh --list apt
+  ```
+- **統計情報表示:**
+  ```bash
+  ./update-manager.sh --stats
+  ```
+- **更新チェック (APT/Snapのみ):**
+  パッケージマネージャーで更新可能なパッケージを確認します。
+  ```bash
+  ./update-manager.sh --check-updates
+  ```
 
-**検出対象:**
-- PATH内の全実行ファイル
-- 手動インストールディレクトリ (`/usr/local/bin`, `/opt`, etc.)
-- Gitリポジトリ内の実行ファイル
-- AppImageファイル
+### 2. `git-updater.sh` (Gitリポジトリ管理)
 
-### classify-update-method.sh
-検出されたプログラムの更新方法を分析・分類します。
+**注意:** このスクリプトは`programs.json`を読み込もうとするため、現状では`update-manager.sh`と連携しません。手動での利用や、将来の統合を前提としたツールです。
 
-**分類内容:**
-- パッケージマネージャー判定
-- 更新方法の推定
-- セキュリティリスク評価
-- 更新頻度の推定
+**主な機能:**
+- `--check-only`: 更新の有無をチェックします。
+- `--update-all`: 全てのGitリポジトリを更新します。
+- `--update <name>`: 特定のリポジトリを更新します。
 
-### git-updater.sh
-Git管理されたプログラムの更新を自動化します。
+### 3. `manual-tracker.sh` (手動インストール管理)
 
-**機能:**
-- `--check-only`: 更新可能性チェック
-- `--update <name>`: 特定リポジトリ更新
-- `--update-all`: 全リポジトリ更新
-- 自動ビルド機能（Makefile, CMake, 等）
+**注意:** こちらも`programs.json`に依存しています。`manual-config.json`ファイルで更新元（GitHubリリース等）を定義することで、手動インストールしたプログラムの更新を追跡できます。
 
-### manual-tracker.sh
-手動インストールプログラムの追跡・管理を行います。
+**主な機能:**
+- **更新チェック:**
+  ```bash
+  ./manual-tracker.sh --check-updates
+  ```
+- **追跡対象の追加:**
+  ```bash
+  # GitHubリポジトリを更新元として追加
+  ./manual-tracker.sh --add /usr/local/bin/kubectl github:kubernetes/kubernetes
+  ```
+- **バックアップ作成:**
+  ```bash
+  ./manual-tracker.sh --backup /usr/local/bin/kubectl
+  ```
 
-**機能:**
-- `--check-updates`: 更新チェック
-- `--add <path> [source]`: 追跡対象追加
-- `--backup <path>`: バックアップ作成
-- `--show-tracking`: 追跡情報表示
+## 📁 ディレクトリ構造
 
-## ディレクトリ構造
+スクリプトを実行すると、`~/.update-manager/`に以下のファイルが生成されます。
 
-```
-~/.update-manager/
-├── programs.yaml         # プログラム情報データベース（YAML形式）
-├── manual-config.json    # 手動更新設定
-├── checksums.txt         # ファイルチェックサム履歴
-├── update.log           # 更新ログ
-├── git-updates.log      # Git更新ログ
-└── backups/             # バックアップディレクトリ
-    └── program_name.timestamp.backup
-```
+- `programs.yaml`: `update-manager.sh --full-scan`で生成されるメインのデータベース。
+- `update.log`: `update-manager.sh`のログファイル。
+- `manual-config.json`: `manual-tracker.sh`用の設定ファイル。更新ソースなどを定義します。
+- `checksums.txt`: `manual-tracker.sh`がファイルの変更を追跡するためのチェックサム履歴。
+- `git-updates.log`: `git-updater.sh`のログファイル。
+- `backups/`: `manual-tracker.sh`で作成したバックアップが保存されるディレクトリ。
 
-## 設定ファイル
+## 🤝 貢献
 
-### ~/.update-manager/manual-config.json
-手動インストールプログラムの更新ソース設定:
-
-```json
-{
-  "update_sources": {
-    "github_releases": [
-      {
-        "name": "kubectl",
-        "repo": "kubernetes/kubernetes",
-        "binary_pattern": "kubectl"
-      }
-    ],
-    "direct_download": [
-      {
-        "name": "ollama",
-        "url": "https://ollama.ai/install.sh",
-        "install_method": "curl -fsSL https://ollama.ai/install.sh | sh"
-      }
-    ]
-  }
-}
-```
-
-## 使用例
-
-### 手動プログラムを追跡対象に追加
-```bash
-# GitHub リリースから更新
-./manual-tracker.sh --add /usr/local/bin/kubectl github:kubernetes/kubernetes
-
-# 直接ダウンロードから更新
-./manual-tracker.sh --add /usr/local/bin/ollama url:https://ollama.ai/install.sh
-```
-
-### 特定カテゴリの更新チェック
-```bash
-# Git リポジトリのみチェック
-./git-updater.sh --check-only
-
-# 手動インストールプログラムのみチェック
-./manual-tracker.sh --check-updates
-```
-
-### バックアップ作成
-```bash
-./manual-tracker.sh --backup /usr/local/bin/important-tool
-```
-
-## トラブルシューティング
-
-### jqが見つからない場合
-```bash
-sudo apt install jq
-```
-
-### 権限エラーが発生する場合
-一部のプログラム更新には管理者権限が必要です：
-```bash
-sudo ./update-manager.sh --update all
-```
-
-### データファイルが見つからない場合
-初回スキャンを実行してください：
-```bash
-./update-manager.sh --scan
-```
-
-## ライセンス
-
-このツールセットはMITライセンスの下で提供されます。
-
-## 貢献
+このプロジェクトは開発の初期段階です。特に、以下の点に関する貢献を歓迎します。
+- 各スクリプトの機能を`update-manager.sh`に統合する。
+- `git-updater.sh`と`manual-tracker.sh`をYAML (`programs.yaml`) に対応させる。
+- `update-manager.sh`に更新実行機能 (`--update`) を実装する。
 
 バグ報告や機能要望は、Issues を通じて報告してください。
+
+## 📄 ライセンス
+
+このツールセットはMITライセンスの下で提供されます。
