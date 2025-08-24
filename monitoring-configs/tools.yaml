@@ -169,10 +169,10 @@ tools:
 
   # Language Runtimes (version manager managed)
   nodejs:
-    current_version: "18.19.0"
+    current_version: "24.6.0"
     github_repo: "nodejs/node"
     update_method: "version_manager"
-    version_manager: "asdf"
+    version_manager: "nvm"
     category: "runtime"
     priority: "high"
 
@@ -198,6 +198,16 @@ tools:
     update_method: "version_manager"
     version_manager: "asdf"
     category: "runtime"
+    priority: "medium"
+
+  # Version Managers
+  nvm:
+    current_version: "0.40.1"
+    github_repo: "nvm-sh/nvm"
+    update_method: "git_update"
+    install_path: "~/.nvm"
+    update_command: "cd ~/.nvm && git fetch --tags && git checkout $(git describe --abbrev=0 --tags)"
+    category: "version_manager"
     priority: "medium"
 
   # AI/ML Tools
