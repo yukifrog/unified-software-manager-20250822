@@ -81,9 +81,10 @@ tools:
     priority: "high"
 
   jq:
-    current_version: "1.6"
+    current_version: "1.8.1"
     github_repo: "jqlang/jq"
     update_method: "binary_download"
+    install_command: "curl -L https://github.com/jqlang/jq/releases/download/jq-{version}/jq-linux-amd64 -o /usr/local/bin/jq && chmod +x /usr/local/bin/jq"
     category: "cli"
     priority: "high"
 
