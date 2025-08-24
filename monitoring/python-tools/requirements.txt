@@ -7,9 +7,3 @@ github-cli==2.78.0
 # kubectl - https://github.com/kubernetes/kubernetes
 kubectl==1.25.4
 
-# code - https://github.com/microsoft/vscode
-code==1.85.1
-
-# ollama - https://github.com/ollama/ollama
-ollama==0.1.17
-

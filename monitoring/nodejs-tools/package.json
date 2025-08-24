@@ -5,9 +5,7 @@
   "private": true,
   "dependencies": {
     "@github/gh": "2.78.0",
-    "@kubernetes/kubectl": "1.25.4",
-    "code": "1.85.1",
-    "ollama": "0.1.17"
+    "@kubernetes/kubectl": "1.25.4"
   },
   "devDependencies": {},
   "scripts": {
