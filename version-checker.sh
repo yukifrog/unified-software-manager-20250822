@@ -139,8 +139,8 @@ save_to_cache() {
            '.[$repo] = {"version": $version, "timestamp": $timestamp}' \
            "$temp_cache" > "$CACHE_FILE"
     else
-        # jq がない場合はキャッシュ保存しない
-        warn "jq がないためキャッシュ機能が無効です"
+        # jq がない場合はキャッシュ保存しない (warningは出力しない)
+        true
     fi
     
     rm -f "$temp_cache"
@@ -234,7 +234,12 @@ check_updates() {
     local output_format="${1:-table}"
     local category_filter="${2:-all}"
     
-    info "バージョン更新チェック開始..."
+    # JSON出力時はログをstderrに
+    if [[ "$output_format" == "json" ]]; then
+        info "バージョン更新チェック開始..." >&2
+    else
+        info "バージョン更新チェック開始..."
+    fi
     
     local tools
     tools=$(get_tools_list)
@@ -266,11 +271,19 @@ check_updates() {
         category=$(get_yaml_value "$CONFIG_FILE" "$tool_name" "category")
         
         if [[ -z "$github_repo" ]]; then
-            warn "GitHubリポジトリが設定されていません: $tool_name"
+            if [[ "$output_format" == "json" ]]; then
+                warn "GitHubリポジトリが設定されていません: $tool_name" >&2
+            else
+                warn "GitHubリポジトリが設定されていません: $tool_name"
+            fi
             continue
         fi
         
-        info "チェック中: $tool_name ($current_version)"
+        if [[ "$output_format" == "json" ]]; then
+            info "チェック中: $tool_name ($current_version)" >&2
+        else
+            info "チェック中: $tool_name ($current_version)"
+        fi
         
         local latest_version
         latest_version=$(get_github_latest_version "$github_repo")
@@ -285,7 +298,11 @@ check_updates() {
         comparison=$(version_compare "$current_version" "$latest_version")
         
         if [[ "$comparison" == "github_newer" ]]; then
-            highlight "更新あり: $tool_name $current_version → $latest_version"
+            if [[ "$output_format" == "json" ]]; then
+                highlight "更新あり: $tool_name $current_version → $latest_version" >&2
+            else
+                highlight "更新あり: $tool_name $current_version → $latest_version"
+            fi
             
             # 更新情報を配列に追加
             local update_info="{\"tool\":\"$tool_name\",\"current_version\":\"$current_version\",\"latest_version\":\"$latest_version\",\"github_repo\":\"$github_repo\",\"category\":\"$category\",\"priority\":\"$priority\"}"
@@ -300,6 +317,7 @@ check_updates() {
     # 結果出力
     case "$output_format" in
         "json")
+            # JSON出力時はログを抑制
             if [[ ${#updates[@]} -gt 0 ]]; then
                 printf "[\n"
                 for i in "${!updates[@]}"; do
@@ -315,7 +333,7 @@ check_updates() {
             fi
             ;;
         "table"|*)
-            echo
+            echo >&2
             success "バージョンチェック完了"
             info "チェック対象: $checked_count ツール"
             info "エラー: $error_count ツール"
