@@ -86,6 +86,21 @@ scan_path_executables() {
                     category="snap"
                 elif [[ "$file" =~ /usr/local/ ]]; then
                     category="manual"
+                elif [[ "$file" =~ /.local/bin/ ]]; then
+                    # pip/npm/gem などの可能性
+                    if command -v pip >/dev/null 2>&1 && pip show "$name" >/dev/null 2>&1; then
+                        category="pip"
+                        package_name="$name"
+                    elif command -v npm >/dev/null 2>&1 && npm list -g "$name" >/dev/null 2>&1; then
+                        category="npm"
+                        package_name="$name"
+                    else
+                        category="user"
+                    fi
+                elif [[ "$file" =~ /.nvm/ ]]; then
+                    category="nvm"
+                elif [[ "$file" =~ /.asdf/ ]]; then
+                    category="asdf"
                 fi
                 
                 # バージョン取得試行（セキュリティ向上）
@@ -276,7 +291,7 @@ update_statistics() {
     appimage_count=$(grep -c "category: \"appimage\"" "$DATA_FILE" 2>/dev/null || echo 0)
     local unknown_count
     unknown_count=$(grep -c "category: \"unknown\"" "$DATA_FILE" 2>/dev/null || echo 0)
-    local total_count=$((apt_count + snap_count + manual_count + appimage_count + unknown_count))
+    local total_count=$((${apt_count:-0} + ${snap_count:-0} + ${manual_count:-0} + ${appimage_count:-0} + ${unknown_count:-0}))
     
     # 統計情報を更新
     sed -i "s/apt: .*/apt: $apt_count/" "$DATA_FILE"

@@ -253,7 +253,7 @@ list_programs() {
         return 0
     fi
     
-    echo "$programs" | while IFS= read -r prog_name; do
+    echo "$programs" | sort | uniq | while IFS= read -r prog_name; do
         if [[ -n "$prog_name" ]]; then
             local prog_category=$(get_program_value "$prog_name" "category")
             local prog_path=$(get_program_value "$prog_name" "path")
@@ -274,10 +274,10 @@ show_statistics() {
     fi
     
     info "プログラム管理統計:"
-    echo "  APT管理: $(grep "^[[:space:]]*apt:" "$DATA_FILE" | sed 's/.*: //')"
-    echo "  Snap管理: $(grep "^[[:space:]]*snap:" "$DATA_FILE" | sed 's/.*: //')"
-    echo "  手動インストール: $(grep "^[[:space:]]*manual:" "$DATA_FILE" | sed 's/.*: //')"
-    echo "  不明: $(grep "^[[:space:]]*unknown:" "$DATA_FILE" | sed 's/.*: //')"
+    echo "  APT管理: $(grep "^[[:space:]]*apt:" "$DATA_FILE" | sed 's/.*: //' | head -1)"
+    echo "  Snap管理: $(grep "^[[:space:]]*snap:" "$DATA_FILE" | sed 's/.*: //' | head -1)"
+    echo "  手動インストール: $(grep "^[[:space:]]*manual:" "$DATA_FILE" | sed 's/.*: //' | head -1)"
+    echo "  不明: $(grep "^[[:space:]]*unknown:" "$DATA_FILE" | sed 's/.*: //' | head -1)"
     echo "  合計: $(grep "^[[:space:]]*total_programs:" "$DATA_FILE" | sed 's/.*: //')"
     echo "  最終スキャン: $(grep "^[[:space:]]*last_scan:" "$DATA_FILE" | sed 's/.*: //' | sed 's/"//g')"
 }
