@@ -353,7 +353,7 @@ update_all_repos() {
     local success_count=0
     local error_count=0
     
-    echo "$git_repos" | sort | uniq | while IFS= read -r repo_path; do
+    while IFS= read -r repo_path; do
         if [[ -n "$repo_path" && -d "$repo_path" ]]; then
             if update_git_repo "$repo_path"; then
                 check_and_build "$repo_path"
@@ -362,7 +362,7 @@ update_all_repos() {
                 error_count=$((error_count + 1))
             fi
         fi
-    done
+    done < <(echo "$git_repos" | sort | uniq)
     
     success "Git更新完了: 成功 $success_count 件、エラー $error_count 件"
 }

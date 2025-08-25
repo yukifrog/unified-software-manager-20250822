@@ -246,8 +246,7 @@ check_configured_updates() {
     direct_config=$(jq -r --arg name "$program_name" '.update_sources.direct_download[] | select(.name == $name)' "$MANUAL_CONFIG" 2>/dev/null || echo "")
     
     if [[ -n "$direct_config" && "$direct_config" != "null" ]]; then
-        local update_url
-        update_url=$(echo "$direct_config" | jq -r '.url')
+        
         
         local install_method
         install_method=$(echo "$direct_config" | jq -r '.install_method')
@@ -343,13 +342,22 @@ backup_program() {
     local backup_dir="$CONFIG_DIR/backups"
     mkdir -p "$backup_dir"
     
-    local backup_file="$backup_dir/${program_name}.$(date +%Y%m%d_%H%M%S).backup"
+    local backup_file
+    backup_file="$backup_dir/${program_name}.$(date +%Y%m%d_%H%M%S).backup"
     
     if cp "$program_path" "$backup_file" 2>/dev/null; then
         success "バックアップ作成: $backup_file"
         
         # 古いバックアップを削除（5個以上保持しない）
-        ls -1t "$backup_dir/${program_name}".*.backup 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || true
+        files_to_delete=()
+        # shellcheck disable=SC2012
+        while IFS= read -r file; do
+            files_to_delete+=("$file")
+        done < <(ls -1t "$backup_dir/${program_name}".*.backup 2>/dev/null | tail -n +6)
+
+        if [ ${#files_to_delete[@]} -gt 0 ]; then
+            rm -f "${files_to_delete[@]}"
+        fi
     else
         error "バックアップ作成失敗: $program_path"
         return 1
