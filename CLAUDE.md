@@ -14,5 +14,7 @@
 - **静的解析ツール優先**: AIを使わなくても解析できるlint、typecheck、shellcheck等は積極的に使用（速度面で有利）
 
 ## 開発設定
-- **テストコマンド**: プロジェクト固有のlint/typecheckコマンドがあれば記載
-- **ビルドコマンド**: プロジェクト固有のビルドコマンドがあれば記載
+- **静的解析ツール**: shellcheck, shfmt, yamllint, bats
+- **テストコマンド**: `bats tests/` (Bashテストフレームワーク)
+- **リントコマンド**: `shellcheck *.sh`, `yamllint .github/`
+- **フォーマットコマンド**: `shfmt -w *.sh`
