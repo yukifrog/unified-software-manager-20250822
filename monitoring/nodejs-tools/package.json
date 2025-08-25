@@ -4,8 +4,20 @@
   "description": "Monitoring file for tracking DevOps tools releases via Dependabot",
   "private": true,
   "dependencies": {
-    "@github/gh": "2.78.0",
-    "@kubernetes/kubectl": "1.25.4"
+    "httpie": "3.2.4",
+    "jq": "1.8.1",
+    "httpie": "3.2.4",
+    "jq": "1.8.1",
+    "httpie": "3.2.4",
+    "jq": "1.8.1",
+    "httpie": "3.2.4",
+    "jq": "1.8.1",
+    "node": "24.6.0",
+    "ollama": "0.11.4",
+    "code": "1.103.2",
+    "ollama": "0.11.4",
+    "httpie": "3.2.4",
+    "jq": "1.8.1"
   },
   "devDependencies": {},
   "scripts": {
