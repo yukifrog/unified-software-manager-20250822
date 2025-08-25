@@ -81,7 +81,7 @@ check_asdf_status() {
         # .tool-versionsファイル確認
         if [[ -f "$HOME/.tool-versions" ]]; then
             info "グローバル設定 (~/.tool-versions):"
-            cat "$HOME/.tool-versions" | sed 's/^/    /'
+            sed 's/^/    /' < "$HOME/.tool-versions"
         fi
         
         return 0
@@ -207,8 +207,10 @@ auto_install() {
     
     if [[ -n "$shell_config" && -f "$shell_config" ]]; then
         if ! grep -q "asdf.sh" "$shell_config"; then
-            echo '. "$HOME/.asdf/asdf.sh"' >> "$shell_config"
-            echo '. "$HOME/.asdf/completions/asdf.bash"' >> "$shell_config"
+            cat <<'EOF' >> "$shell_config"
+. "$HOME/.asdf/asdf.sh"
+. "$HOME/.asdf/completions/asdf.bash"
+EOF
             success "シェル設定を追加しました: $shell_config"
             info "次回ターミナル起動時または source $shell_config で有効になります"
         else
