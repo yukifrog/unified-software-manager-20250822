@@ -55,41 +55,54 @@ EOF
 scan_path_executables() {
     info "PATH内の実行ファイルをスキャン中..."
     local count=0
-    local temp_results=$(mktemp)
+    local temp_results
+    temp_results=$(mktemp)
+    
+    # エラー時の一時ファイル削除を保証
+    trap 'rm -f "$temp_results"' EXIT ERR
     
     # PATH を分割してスキャン
-    echo "$PATH" | tr ':' '\n' | while IFS= read -r dir; do
+    while IFS= read -r dir; do
         if [[ -d "$dir" && -r "$dir" ]]; then
             info "  スキャン中: $dir"
             
-            find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | head -30 | while IFS= read -r file; do
-                local name=$(basename "$file")
+            while IFS= read -r file; do
+                local name
+                name=$(basename "$file")
+                
+                # ファイル存在・権限チェック
+                [[ ! -f "$file" || ! -r "$file" ]] && continue
+                
                 local category="unknown"
                 local package_name="none"
                 local version="unknown"
                 
-                # パッケージマネージャー判定
-                if dpkg -S "$file" >/dev/null 2>&1; then
+                # パッケージマネージャー判定  
+                if [[ -f "$file" && -x "$file" ]] && dpkg -S "$file" >/dev/null 2>&1; then
                     category="apt"
                     package_name=$(dpkg -S "$file" 2>/dev/null | cut -d: -f1)
+                    [[ -z "$package_name" ]] && package_name="unknown"
                 elif [[ "$file" =~ /snap/ ]]; then
                     category="snap"
                 elif [[ "$file" =~ /usr/local/ ]]; then
                     category="manual"
                 fi
                 
-                # バージョン取得試行
-                version=$("$file" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 2>/dev/null || echo "unknown")
+                # バージョン取得試行（セキュリティ向上）
+                if [[ -f "$file" && -x "$file" ]]; then
+                    version=$("$file" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 2>/dev/null || echo "unknown")
+                fi
                 
                 echo "$name|$file|$category|$package_name|$version" >> "$temp_results"
                 count=$((count + 1))
-            done
+            done < <(find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | head -30)
         fi
-    done
+    done < <(echo "$PATH" | tr ':' '\n')
     
     # 結果をYAMLに追加
     add_programs_to_yaml "$temp_results" "$count"
     rm -f "$temp_results"
+    trap - EXIT ERR
     
     success "PATH内のスキャン完了: $count 個検出"
 }
@@ -105,23 +118,26 @@ scan_manual_installs() {
         "$HOME/bin"
     )
     
-    local temp_results=$(mktemp)
+    local temp_results
+    temp_results=$(mktemp)
     local count=0
     
     for dir in "${manual_dirs[@]}"; do
         if [[ -d "$dir" && -r "$dir" ]]; then
             info "  手動インストールディレクトリをスキャン: $dir"
             
-            find "$dir" -type f -executable 2>/dev/null | while IFS= read -r file; do
-                local name=$(basename "$file")
+            while IFS= read -r file; do
+                local name
+                name=$(basename "$file")
                 
                 # 重複チェック
                 if ! grep -q "^$name|" "$temp_results" 2>/dev/null; then
-                    local version=$("$file" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 2>/dev/null || echo "unknown")
+                    local version
+                    version=$("$file" --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 2>/dev/null || echo "unknown")
                     echo "$name|$file|manual|none|$version" >> "$temp_results"
                     count=$((count + 1))
                 fi
-            done
+            done < <(find "$dir" -type f -executable 2>/dev/null)
         fi
     done
     
@@ -147,11 +163,12 @@ scan_appimages() {
     
     for path in "${appimage_paths[@]}"; do
         if [[ -d "$path" ]]; then
-            find "$path" -name "*.AppImage" -type f 2>/dev/null | while IFS= read -r appimage; do
-                local name=$(basename "$appimage" .AppImage)
+            while IFS= read -r appimage; do
+                local name
+                name=$(basename "$appimage" .AppImage)
                 add_appimage_to_yaml "$name" "$appimage"
                 count=$((count + 1))
-            done
+            done < <(find "$path" -name "*.AppImage" -type f 2>/dev/null)
         fi
     done
     
@@ -193,7 +210,8 @@ add_program_to_yaml() {
     local package="$4"
     local version="$5"
     
-    local update_method=$(get_update_method "$category" "$name")
+    local update_method
+    update_method=$(get_update_method "$category" "$name")
     
     cat >> "$DATA_FILE" << EOF
   $name:
@@ -248,11 +266,16 @@ update_statistics() {
     info "統計情報を更新中..."
     
     # 各カテゴリの数をカウント
-    local apt_count=$(grep -c "category: \"apt\"" "$DATA_FILE" 2>/dev/null || echo 0)
-    local snap_count=$(grep -c "category: \"snap\"" "$DATA_FILE" 2>/dev/null || echo 0)
-    local manual_count=$(grep -c "category: \"manual\"" "$DATA_FILE" 2>/dev/null || echo 0)
-    local appimage_count=$(grep -c "category: \"appimage\"" "$DATA_FILE" 2>/dev/null || echo 0)
-    local unknown_count=$(grep -c "category: \"unknown\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local apt_count
+    apt_count=$(grep -c "category: \"apt\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local snap_count
+    snap_count=$(grep -c "category: \"snap\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local manual_count
+    manual_count=$(grep -c "category: \"manual\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local appimage_count
+    appimage_count=$(grep -c "category: \"appimage\"" "$DATA_FILE" 2>/dev/null || echo 0)
+    local unknown_count
+    unknown_count=$(grep -c "category: \"unknown\"" "$DATA_FILE" 2>/dev/null || echo 0)
     local total_count=$((apt_count + snap_count + manual_count + appimage_count + unknown_count))
     
     # 統計情報を更新
