@@ -11,6 +11,7 @@
 ## AI使用設定
 - **ローカルAI優先**: llm + ollama を使用してClaude API使用量を節約
 - **使用モデル**: 軽量モデル (1-3B parameters) を優先して高速応答
+- **静的解析ツール優先**: AIを使わなくても解析できるlint、typecheck、shellcheck等は積極的に使用（速度面で有利）
 
 ## 開発設定
 - **テストコマンド**: プロジェクト固有のlint/typecheckコマンドがあれば記載
