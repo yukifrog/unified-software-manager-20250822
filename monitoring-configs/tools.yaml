@@ -124,11 +124,76 @@ tools:
     category: "cli"
     priority: "medium"
 
-  exa:
-    current_version: "0.10.1"
-    github_repo: "ogham/exa"
+  eza:
+    current_version: "0.23.0"
+    github_repo: "eza-community/eza"
     update_method: "binary_download"
+    install_command: "curl -L https://github.com/eza-community/eza/releases/download/v{version}/eza_x86_64-unknown-linux-gnu.tar.gz | tar xzf - -C /tmp && mv /tmp/eza ~/.local/bin/"
     category: "cli"
+    priority: "medium"
+
+  zoxide:
+    current_version: "0.9.6"
+    github_repo: "ajeetdsouza/zoxide"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/ajeetdsouza/zoxide/releases/download/v{version}/zoxide-{version}-x86_64-unknown-linux-musl.tar.gz | tar xzf - -C /tmp && mv /tmp/zoxide ~/.local/bin/"
+    category: "cli"
+    priority: "high"
+
+  starship:
+    current_version: "1.23.0"
+    github_repo: "starship/starship"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/starship/starship/releases/download/v{version}/starship-x86_64-unknown-linux-gnu.tar.gz | tar xzf - -C /tmp && mv /tmp/starship ~/.local/bin/"
+    category: "terminal"
+    priority: "high"
+
+  httpie:
+    current_version: "3.2.4"
+    github_repo: "httpie/httpie"
+    update_method: "pip_install"
+    install_command: "pip install --user httpie"
+    category: "development"
+    priority: "high"
+
+  direnv:
+    current_version: "2.35.0"
+    github_repo: "direnv/direnv"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/direnv/direnv/releases/download/v{version}/direnv.linux-amd64 -o ~/.local/bin/direnv && chmod +x ~/.local/bin/direnv"
+    category: "development"
+    priority: "high"
+
+  watchexec:
+    current_version: "2.3.2"
+    github_repo: "watchexec/watchexec"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/watchexec/watchexec/releases/download/v{version}/watchexec-{version}-x86_64-unknown-linux-musl.tar.xz | tar xJf - -C /tmp && mv /tmp/watchexec-{version}-x86_64-unknown-linux-musl/watchexec ~/.local/bin/"
+    category: "development"
+    priority: "medium"
+
+  btop:
+    current_version: "1.4.0"
+    github_repo: "aristocratos/btop"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/aristocratos/btop/releases/download/v{version}/btop-x86_64-linux-musl.tbz | tar xjf - -C /tmp && mv /tmp/btop/bin/btop ~/.local/bin/"
+    category: "system"
+    priority: "high"
+
+  dust:
+    current_version: "1.1.1"
+    github_repo: "bootandy/dust"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/bootandy/dust/releases/download/v{version}/dust-v{version}-x86_64-unknown-linux-musl.tar.gz | tar xzf - -C /tmp && mv /tmp/dust-v{version}-x86_64-unknown-linux-musl/dust ~/.local/bin/"
+    category: "system"
+    priority: "medium"
+
+  bandwhich:
+    current_version: "0.23.1"
+    github_repo: "imsnif/bandwhich"
+    update_method: "binary_download"
+    install_command: "curl -L https://github.com/imsnif/bandwhich/releases/download/v{version}/bandwhich-v{version}-x86_64-unknown-linux-musl.tar.gz | tar xzf - -C /tmp && mv /tmp/bandwhich ~/.local/bin/"
+    category: "system"
     priority: "low"
 
   delta:
