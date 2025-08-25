@@ -284,6 +284,15 @@ tools:
     category: "ai"
     priority: "medium"
 
+  gemini-cli:
+    current_version: "0.1.22"
+    github_repo: "google-gemini/gemini-cli"
+    npm_package: "@google/gemini-cli"
+    update_method: "npm_global"
+    install_command: "npm install -g @google/gemini-cli"
+    category: "ai"
+    priority: "high"
+
 # PR作成設定
 pr_settings:
   branch_prefix: "deps/update-"

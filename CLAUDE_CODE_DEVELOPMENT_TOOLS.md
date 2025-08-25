@@ -1,125 +1,145 @@
-# Claude Code Development Tools
+# Claude Code 開発ツール
 
-## Overview
+## 概要
 
-This document lists recommended tools that significantly enhance development efficiency when used with Claude Code. These tools are optimized for command-line development workflows and integrate seamlessly with Claude Code's capabilities.
+このドキュメントは、Claude Codeと組み合わせることで開発効率を大幅に向上させる推奨ツールを一覧化しています。これらのツールはコマンドライン開発ワークフローに最適化されており、Claude Codeの機能とシームレスに統合されます。
 
-## 🚀 **Recommended Tools by Category**
+## 📚 **目次**
 
-### **📝 Editor & IDE Integration**
+- [🚀 カテゴリ別推奨ツール](#-カテゴリ別推奨ツール)
+  - [📝 エディタ & IDE 統合](#-エディタ--ide-統合)
+  - [🔍 検索 & ファイル操作](#-検索--ファイル操作)  
+  - [🐛 デバッグ & システム分析](#-デバッグ--システム分析)
+  - [⚡ 開発効率](#-開発効率)
+  - [🛠️ ビルド & 開発ツール](#️-ビルド--開発ツール)
+  - [📊 コード品質 & 解析](#-コード品質--解析)
+  - [🐳 コンテナ技術 & 環境再現](#-コンテナ技術--環境再現)
+  - [🧪 テスト & 品質保証](#-テスト--品質保証)
+  - [🤖 AI & LLM ツール](#-ai--llm-ツール)
+  - [🔧 システムユーティリティ](#-システムユーティリティ)
+- [🎯 優先インストール推奨事項](#-優先インストール推奨事項)
+- [🔄 Unified Software Managerとの統合](#-unified-software-managerとの統合)
+- [🚀 クイックスタートコマンド](#-クイックスタートコマンド)
+- [📚 ドキュメント & リソース](#-ドキュメント--リソース)
+- [🤖 AI協調開発ツール評価レポート](#-ai協調開発ツール評価レポート)
+- [🔄 AI協調開発ワークフロー](#-ai協調開発ワークフロー)
 
-#### Neovim/Vim Ecosystem
+## 🚀 **カテゴリ別推奨ツール**
+
+### **📝 エディタ & IDE 統合**
+
+#### Neovim/Vim エコシステム
 ```bash
-# Plugin Managers
-lazy.nvim          # Fast and flexible plugin manager with lazy loading
-                   # Improves Neovim startup time significantly
-packer.nvim        # Alternative plugin manager with declarative configuration
+# プラグインマネージャー
+lazy.nvim          # 遅延読み込み対応の高速で柔軟なプラグインマネージャー
+                   # Neovimの起動時間を大幅に改善
+packer.nvim        # 宣言的設定が可能な代替プラグインマネージャー
 
-# Essential Plugins  
-telescope.nvim     # Fuzzy finder for files, buffers, git commits, LSP symbols
-                   # Replaces multiple tools with unified interface
-nvim-lspconfig     # Easy LSP setup for code completion, diagnostics, formatting
-                   # Brings IDE-like features to Neovim
-nvim-treesitter    # Better syntax highlighting using tree-sitter parsers
-                   # Provides semantic understanding of code structure
+# 必須プラグイン
+telescope.nvim     # ファイル、バッファ、gitコミット、LSPシンボルのファジーファインダー
+                   # 複数のツールを統一インターフェースで置換
+nvim-lspconfig     # コード補完、診断、フォーマットのための簡単LSP設定
+                   # NeovimにIDE的機能をもたらす
+nvim-treesitter    # tree-sitterパーサーを使用した高度なシンタックスハイライト
+                   # コード構造の意味的理解を提供
 ```
 
-#### VS Code Extensions (Claude Code Compatible)
+#### VS Code 拡張機能 (Claude Code 対応)
 ```bash
-# Development Enhancement
-GitLens            # Comprehensive Git integration showing blame, history, branches
-                   # Visualizes code evolution and collaboration patterns
-Thunder Client     # Built-in REST API testing without leaving editor
-                   # Alternative to Postman for simple API development
-Error Lens         # Shows errors and warnings directly in editor lines
-                   # Reduces need to check Problems panel constantly
-Bracket Pair       # Color-codes matching brackets and parentheses
-                   # Essential for nested code structure visualization
+# 開発効率向上
+GitLens            # blame、履歴、ブランチを表示する包括的Git統合
+                   # コードの進化と協業パターンを可視化
+Thunder Client     # エディタを離れることなく使用できる内蔵REST APIテストツール
+                   # シンプルなAPI開発におけるPostmanの代替
+Error Lens         # エラーと警告をエディタの行に直接表示
+                   # 問題パネルを常にチェックする必要性を削減
+Bracket Pair       # 対応する括弧とカッコを色分けコーディング
+                   # ネストしたコード構造の可視化に必須
 ```
 
-### **🔍 Search & File Operations**
+### **🔍 検索 & ファイル操作**
 
-#### Already Configured ✅
+#### 既に設定済み ✅
 ```bash
-ripgrep (rg)       # Ultra-fast text search with regex and Unicode support
-                   # 10-100x faster than grep, ignores binary files and .gitignore
-fd                 # Intuitive find replacement with sensible defaults
-                   # Faster than find, respects .gitignore, colored output
-fzf                # Interactive fuzzy finder for files, history, processes
-                   # Integrates with shell history, git, and many tools
-bat                # Cat clone with syntax highlighting and Git integration
-                   # Shows line numbers, file changes, and supports themes
+ripgrep (rg)       # 正規表現とUnicodeサポート付きの超高速テキスト検索
+                   # grepより10-100倍高速、バイナリファイルと.gitignoreを無視
+fd                 # 合理的なデフォルト設定を持つ直感的なfind置換
+                   # findより高速、.gitignoreを尊重、カラー出力
+fzf                # ファイル、履歴、プロセス用のインタラクティブファジーファインダー
+                   # シェル履歴、git、多くのツールと統合
+bat                # シンタックスハイライトとGit統合付きcatクローン
+                   # 行番号、ファイル変更を表示、テーマサポート
 ```
 
-#### Recommended Additions
+#### 追加推奨
 ```bash
-eza                # Modern ls replacement with Git status, icons, and colors
-                   # Shows file metadata, permissions, and directory trees beautifully
-zoxide             # Intelligent cd replacement that learns frequently used paths
-                   # Jump to directories using partial names and usage frequency
-broot              # Interactive tree navigator with fuzzy search and preview
-                   # Navigate large directory structures with vim-like commands
+eza                # Gitステータス、アイコン、カラー付きモダンls置換
+                   # ファイルメタデータ、権限、ディレクトリツリーを美しく表示
+zoxide             # 頻繁に使用するパスを学習するインテリジェントcd置換
+                   # 部分名と使用頻度を使用してディレクトリにジャンプ
+broot              # ファジー検索とプレビュー付きインタラクティブツリーナビゲーター
+                   # vim的コマンドで大きなディレクトリ構造をナビゲート
 ```
 
-### **🐛 Debugging & System Analysis**
+### **🐛 デバッグ & システム分析**
 
-#### System Monitoring
+#### システム監視
 ```bash
-htop               # Interactive process viewer with CPU, memory, and process management
-                   # Color-coded, sortable interface for system monitoring
-iotop              # Real-time I/O statistics showing disk read/write per process
-                   # Essential for identifying I/O bottlenecks in development
-ncdu               # Interactive disk usage analyzer with drill-down navigation
-                   # Find large files and directories consuming disk space
-btop               # Modern htop alternative with better graphics and mouse support
-                   # GPU monitoring, network stats, and beautiful terminal UI
+htop               # CPU、メモリ、プロセス管理付きインタラクティブプロセスビューアー
+                   # システム監視用のカラーコード化されたソート可能インターフェース
+iotop              # プロセス別ディスク読み書きを表示するリアルタイムI/O統計
+                   # 開発中のI/Oボトルネック特定に不可欠
+ncdu               # ドリルダウンナビゲーション付きインタラクティブディスク使用量解析ツール
+                   # ディスク容量を消費している大きなファイルやディレクトリを発見
+btop               # 高性能グラフィックとマウスサポート付きモダンhtop代替
+                   # GPU監視、ネットワーク統計、美しいターミナルUI
 ```
 
-#### Network & API Tools
+#### ネットワーク & API ツール
 ```bash
-httpie             # Intuitive HTTP client with JSON support and syntax highlighting
-                   # Perfect for API testing with readable request/response format
-curlie             # Curl wrapper with httpie-style syntax but curl power
-                   # Combines curl's features with httpie's user-friendliness
-dog                # DNS lookup tool with colorized output and multiple record types
-                   # Modern dig replacement with better formatting
-bandwhich          # Real-time network utilization monitoring by process
-                   # Shows which processes are using bandwidth
+httpie             # JSONサポートとシンタックスハイライト付き直感的HTTPクライアント
+                   # 読みやすいリクエスト/レスポンス形式でAPIテストに最適
+curlie             # httpieスタイルの構文でcurlのパワーを持つcurlラッパー
+                   # curlの機能とhttpieの使いやすさを結合
+dog                # カラー出力と複数レコードタイプ対応のDNSルックアップツール
+                   # より優れたフォーマットでのdigのモダン置換
+bandwhich          # プロセス別リアルタイムネットワーク使用率監視
+                   # どのプロセスが帯域を使用しているかを表示
 ```
 
-### **⚡ Development Efficiency**
+### **⚡ 開発効率**
 
-#### Git & Version Control ✅
+#### Git & バージョン管理 ✅
 ```bash
-lazygit            # Full-featured TUI for Git with branch visualization
-                   # Interactive staging, commit, push, merge with mouse support
-delta              # Syntax-highlighted diff viewer with line numbers and themes
-                   # Makes code changes much easier to review and understand
-gh                 # Official GitHub CLI for issues, PRs, releases, and workflows
-                   # Manage GitHub repositories without leaving terminal
+lazygit            # ブランチ可視化付きフル機能Git TUI
+                   # マウスサポート付きインタラクティブステージング、コミット、プッシュ、マージ
+delta              # 行番号とテーマ付きシンタックスハイライトdiffビューアー
+                   # コード変更のレビューと理解をより簡単に
+gh                 # issue、PR、リリース、ワークフロー用公式GitHub CLI
+                   # ターミナルを離れることなくGitHubリポジトリを管理
 ```
 
-#### Data Processing ✅
+#### データ処理 ✅
 ```bash
-jq                 # Powerful JSON processor with filtering, mapping, and formatting
-                   # Essential for API development and data manipulation
-yq                 # YAML/XML processor with jq-compatible syntax
-                   # Perfect for configuration file manipulation and CI/CD
+jq                 # フィルタリング、マッピング、フォーマッティング機能付き強力JSONプロセッサー
+                   # API開発とデータ操作に不可欠
+yq                 # jq互換構文を持つYAML/XMLプロセッサー
+                   # 設定ファイル操作とCI/CDに最適
 ```
 
-#### File Operations
+#### ファイル操作
 ```bash
-rsync              # Robust file synchronization with incremental transfers
-                   # Efficient backups and deployment with network support
-meld               # Visual diff and merge tool with 3-way comparison
-                   # GUI tool for resolving merge conflicts and comparing files
-rclone             # Universal cloud storage CLI supporting 70+ providers
-                   # Sync files with Google Drive, AWS S3, Dropbox, etc.
+rsync              # 差分転送付き堅牢なファイル同期ツール
+                   # ネットワークサポート付き効率的バックアップとデプロイ
+meld               # 3-way比較機能付きビジュアルdiffとマージツール
+                   # マージ競合解決とファイル比較用GUIツール
+rclone             # 70+のプロバイダーをサポートする汎用クラウドストレージCLI
+                   # Google Drive、AWS S3、Dropboxなどとファイル同期
 ```
 
-### **🛠️ Build & Development Tools**
+### **🛠️ ビルド & 開発ツール**
 
-#### Language-Specific Tools
+#### 言語固有ツール
 ```bash
 # Node.js Ecosystem (via nvm) ✅
 node               # JavaScript/TypeScript runtime environment
@@ -146,19 +166,23 @@ air                # Live reload for Go applications during development
                    # Watches files and rebuilds automatically on changes
 ```
 
-#### Universal Development
+#### 汎用開発
 ```bash
-direnv             # Automatic environment variable loading per directory
-                   # Load project-specific env vars when entering directories
-just               # Command runner with simple syntax (better than Make)
-                   # Project-specific commands with parameter support
-watchexec          # File watcher that executes commands on changes
-                   # Cross-platform, supports glob patterns and ignore files
-entr               # Run commands when files change (Unix-focused)
-                   # Simple, reliable file watching for build automation
+direnv             # ディレクトリ別自動環境変数読み込み
+                   # ディレクトリに入る際にプロジェクト固有の環境変数を読み込み
+just               # シンプルな構文のコマンドランナー (Makeより優秀)
+                   # パラメーターサポート付きプロジェクト固有コマンド
+watchexec          # 変更時にコマンドを実行するファイルウォッチャー
+                   # クロスプラットフォーム、globパターンと無視ファイルサポート
+entr               # ファイル変更時にコマンド実行 (Unixフォーカス)
+                   # ビルド自動化用のシンプルで信頼性の高いファイル監視
+
+# 統一ランタイム管理 (推奨) ⭐⭐⭐
+mise               # 全言語のバージョン管理を統合 (旧rtx)
+                   # .mise.tomlで統一管理、direnv連携、nvm/pyenv/gvmを置換
 ```
 
-### **📊 Code Quality & Analysis**
+### **📊 コード品質 & 解析**
 
 ```bash
 # Universal Linters
@@ -171,14 +195,72 @@ shellcheck         # Static analysis tool for shell scripts with helpful suggest
 hadolint           # Dockerfile linter following best practices
                    # Security, optimization, and maintainability checks
 
-# Security Tools
-gitleaks           # Fast secret detection in git repositories
-                   # Scans commits, branches, and files for API keys, passwords
-truffleHog         # Advanced secret scanner with entropy analysis
-                   # Finds high-entropy strings and known secret patterns
+# セキュリティツール
+gitleaks           # gitリポジトリ内の高速秘密情報検出
+                   # APIキー、パスワードのためのコミット、ブランチ、ファイルスキャン
+truffleHog         # エントロピー解析付き高度秘密情報スキャナー
+                   # 高エントロピー文字列と既知の秘密情報パターンを発見
+
+# コミットフック管理 ⭐⭐
+pre-commit         # Git pre-commitフックの統一管理フレームワーク
+                   # AI生成コードの自動品質チェック、複数リンターの統合実行
 ```
 
-### **🔧 System Utilities**
+### **🐳 コンテナ技術 & 環境再現**
+
+```bash
+# コンテナエンジン
+docker             # 業界標準コンテナプラットフォーム
+                   # アプリケーション配布、環境標準化、CI/CD統合
+podman             # Dockerの軽量・セキュア代替 (rootless実行)
+                   # Kubernetesネイティブ、systemd統合
+
+# 環境定義・構成管理 ⭐⭐⭐
+docker-compose     # マルチコンテナアプリケーション定義
+                   # 開発・テスト環境の統一管理
+devcontainer       # VS Code Development Containers
+                   # リポジトリ内環境定義、mise/pre-commitと統合
+act                # GitHub ActionsをローカルでCI/CDデバッグ
+                   # 高速フィードバックサイクル、コスト削減
+```
+
+### **🧪 テスト & 品質保証**
+
+```bash
+# 言語別テストフレームワーク
+pytest             # Python包括テスティングフレームワーク
+                   # カバレッジ計測、パラメータ化テスト、プラグインエコシステム
+jest               # JavaScript/TypeScript標準テスト環境
+                   # スナップショット、モック、ウォッチモード
+go                 # Go内蔵テストツール (go test)
+                   # ベンチマーク、競合状態検出、カバレッジ計測
+
+# AI支援テスト生成 ⭐⭐
+# llmでテストケース生成
+# cat main.go | llm -m claude-3.5-sonnet "テーブル駆動テストを生成"
+# geminiでエッジケース発見
+# gemini -p "この関数の境界値・異常系テストケースを提案"
+
+# カバレッジ & 分析
+pytest-cov         # Pythonコードカバレッジ計測
+                   # HTML/XML レポート、CI統合
+istanbul           # JavaScript カバレッジツール
+                   # ブランチ・関数・行カバレッジ詳細分析
+```
+
+### **🤖 AI & LLM ツール**
+
+```bash
+# AI協調開発 ⭐⭐⭐
+llm                # Simon Willison製 汎用LLM CLI (Claude API対応)
+                   # プロンプト管理、テンプレート、複数モデル統合
+ollama             # ローカルLLM実行環境 (Llama, Mistral等)
+                   # プライベート環境でのAI活用、オフライン対応
+gemini-cli         # Google Gemini公式CLI
+                   # リアルタイム実行、Google検索統合、MCP対応
+```
+
+### **🔧 システムユーティリティ**
 
 ```bash
 # Terminal Enhancements
@@ -198,33 +280,33 @@ procs              # Modern process viewer with tree view and search
                    # Colored output, shows process relationships and resource usage
 ```
 
-## 🎯 **Priority Installation Recommendations**
+## 🎯 **優先インストール推奨事項**
 
-### **Immediate Impact (Install First)**
-1. **eza** - Enhanced file listing with colors and icons
-2. **zoxide** - Intelligent directory navigation
-3. **httpie** - API testing and HTTP requests
-4. **starship** - Beautiful, informative shell prompt
+### **即効性（最初にインストール）**
+1. **eza** - カラーとアイコン付き拡張ファイル一覧表示
+2. **zoxide** - インテリジェントディレクトリナビゲーション
+3. **httpie** - APIテストとHTTPリクエスト
+4. **starship** - 美しく情報豊富なシェルプロンプト
 
-### **Development Workflow Enhancement**
-1. **direnv** - Project-specific environment management
-2. **watchexec** - Automatic command execution on file changes
-3. **just** - Simplified command running
-4. **btop** - System monitoring
+### **開発ワークフロー強化**
+1. **direnv** - プロジェクト固有環境管理
+2. **watchexec** - ファイル変更時の自動コマンド実行
+3. **just** - 簡略化されたコマンド実行
+4. **btop** - システム監視
 
-### **Code Quality & Security**
-1. **prettier** - Universal code formatting
-2. **shellcheck** - Shell script validation
-3. **gitleaks** - Security scanning
+### **コード品質 & セキュリティ**
+1. **prettier** - 汎用コードフォーマット
+2. **shellcheck** - シェルスクリプト検証
+3. **gitleaks** - セキュリティスキャン
 
-## 🔄 **Integration with Unified Software Manager**
+## 🔄 **Unified Software Managerとの統合**
 
-### Adding Tools to Management
+### ツールを管理に追加
 ```bash
-# Edit tools.yaml to add new tools
+# 新しいツールを追加するためにtools.yamlを編集
 vim monitoring-configs/tools.yaml
 
-# Example entry for a new tool:
+# 新しいツールのエントリ例:
 eza:
   current_version: "0.15.0"
   github_repo: "eza-community/eza"
@@ -233,50 +315,161 @@ eza:
   priority: "medium"
 ```
 
-### Monitoring Strategy
-- **Command-line tools**: Managed via `tools.yaml` with binary_download
-- **Language-specific tools**: Managed via version managers (nvm, pyenv, etc.)
-- **Editor plugins**: Managed within respective editors
+### 監視戦略
+- **コマンドラインツール**: `tools.yaml`でbinary_download経由で管理
+- **言語固有ツール**: バージョンマネージャー (nvm, pyenv, etc.) 経由で管理
+- **エディタプラグイン**: それぞれのエディタ内で管理
 
-## 🚀 **Quick Start Commands**
+## 🚀 **クイックスタートコマンド**
 
-### Essential Setup
+### 基本セットアップ
 ```bash
-# Install the unified software manager first
+# まず統合ソフトウェアマネージャーをインストール
 ./unified-software-manager-manager.sh
 
-# Then add priority tools to tools.yaml and run updates
+# 優先ツールをtools.yamlに追加してアップデート実行
 ./version-checker.sh --check-all
 
-# Install version managers for language-specific tools
+# 言語固有ツール用のバージョンマネージャーをインストール
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
 curl https://pyenv.run | bash
 ```
 
-### Verification
+### 検証
 ```bash
-# Test the tools
+# ツールをテスト
 eza -la --icons
 zoxide query --list
 httpie --version
 starship --version
 ```
 
-## 📚 **Documentation & Resources**
+## 📚 **ドキュメント & リソース**
 
-### Tool Documentation
-- [ripgrep User Guide](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md)
-- [fzf Advanced Usage](https://github.com/junegunn/fzf#usage)
-- [Neovim LSP Configuration](https://github.com/neovim/nvim-lspconfig)
-- [Starship Configuration](https://starship.rs/config/)
+### ツールドキュメント
+- [ripgrep ユーザーガイド](https://github.com/BurntSushi/ripgrep/blob/master/GUIDE.md)
+- [fzf 高度な使用法](https://github.com/junegunn/fzf#usage)
+- [Neovim LSP 設定](https://github.com/neovim/nvim-lspconfig)
+- [Starship 設定](https://starship.rs/config/)
 
-### Integration Guides
-- [Zoxide Setup Guide](https://github.com/ajeetdsouza/zoxide#installation)
-- [Direnv Hook Installation](https://direnv.net/docs/hook.html)
-- [GitHub CLI Authentication](https://cli.github.com/manual/gh_auth_login)
+### 統合ガイド
+- [Zoxide セットアップガイド](https://github.com/ajeetdsouza/zoxide#installation)
+- [Direnv フックインストール](https://direnv.net/docs/hook.html)
+- [GitHub CLI 認証](https://cli.github.com/manual/gh_auth_login)
+
+## 🤖 **AI協調開発ツール評価レポート**
+
+### 🎯 レポートの評価
+
+このレポートは非常に価値の高い提案だと思います！特にAI協調開発の観点で素晴らしい洞察です。
+
+### 🌟 特に優秀な提案:
+
+1. **mise (rtx)** ⭐⭐⭐
+   - 現在のnvm/pyenv分散管理の統合ソリューション
+   - .mise.tomlでの一元管理は理想的
+   - direnv統合で環境切り替え自動化
+
+2. **llm (Simon Willison)** ⭐⭐⭐
+   - Claude APIとの直接統合可能
+   - プロンプト管理・テンプレート機能
+   - unified-software-manager-managerとの哲学が一致
+
+3. **pre-commit** ⭐⭐
+   - 既存のlinter(prettier, shellcheck)統合
+   - コード品質の自動化
+   - Claude生成コードの一貫性確保
+
+### 🤔 慎重に検討すべき項目:
+
+- **ai (GitHub Copilot CLI)**: 有料サービス依存、Claude Codeとの重複
+- **cody**: VS Code拡張中心、CLI統合が限定的
+- **grip**: 用途が限定的、occasional use
+
+### 💡 統合提案
+
+**Phase 4として追加推奨:**
+
+#### 最優先
+- **mise**: 全ランタイム統合管理
+- **llm**: Claude API CLI統合
+- **pre-commit**: 自動品質管理
+
+#### 次優先
+- **tig**: Git可視化（lazygitの軽量版）
+- **grip**: Markdownプレビュー
+
+### 🔗 unified-software-manager-managerへの統合アプローチ:
+
+- **mise**: バージョン管理の根本改善
+- **llm**: Claude Code workflows直接統合
+- **pre-commit**: 品質保証の自動化
+
+このレポートは開発環境の次の進化段階を的確に指摘しています。特にmise + llm + pre-commitの組み合わせは、AI協調開発の理想的な基盤になりそうです。
+
+**実装推奨**: 特にmiseから始めることを強く推奨します！
+
+## 🔄 **AI協調開発ワークフロー**
+
+### 📋 **統合開発プロセス**
+
+#### Phase 1: 環境構築・設計
+```bash
+# 1. Claude Code: プロジェクト分析・構造設計
+# 2. mise: 統一ランタイム環境構築
+mise use node@latest python@latest
+# 3. pre-commit: コード品質フレームワーク設定
+pre-commit install
+```
+
+#### Phase 2: 実装・検証サイクル  
+```bash
+# 1. Claude Code: 精密な実装
+# 2. Gemini CLI: リアルタイム実行・検証
+gemini -p "実装されたコードをテスト実行して問題点を特定"
+# 3. llm: 軽量な修正提案
+llm -m claude-3.5-sonnet "エラー解決策を提案: $(cat error.log)"
+```
+
+#### Phase 3: 品質保証・最適化
+```bash
+# 1. pre-commit: 自動品質チェック実行
+pre-commit run --all-files
+# 2. Claude Code: 構造的リファクタリング
+# 3. Gemini CLI: パフォーマンス測定・最適化提案
+```
+
+### ⚡ **実用的統合コマンド**
+
+#### AI支援デバッグワークフロー
+```bash
+# 問題検出 → 分析 → 解決のパイプライン
+gemini -p "バグを再現して詳細ログを出力" | \
+llm -m claude-3.5-sonnet "ログを分析してroot cause特定" | \
+# Claude Code で構造的修正実装
+```
+
+#### コードレビューチェーン
+```bash
+# 多角的レビューで品質向上
+git diff HEAD^ | llm -m claude-3.5-sonnet "コードレビュー実施" && \
+gemini -p "実行可能性とパフォーマンスをチェック" && \
+pre-commit run --files $(git diff --name-only HEAD^)
+```
+
+### 🎯 **推奨ツールセット**
+
+**最小構成 (即効性重視):**
+- **mise** + **llm** + **pre-commit**
+
+**本格構成 (総合開発効率):**  
+- **mise** + **llm** + **gemini-cli** + **pre-commit** + **just**
+
+**エンタープライズ構成:**
+- 上記 + **direnv** + **watchexec** + **gitleaks**
 
 ---
 
-**Last Updated**: 2025-08-25  
-**Compatible with**: Unified Software Manager v2.0+  
-**Maintenance**: Use `./version-checker.sh --check-all` for updates
+**最終更新**: 2025-08-25  
+**互換性**: Unified Software Manager v2.0+  
+**メンテナンス**: アップデートには `./version-checker.sh --check-all` を使用
