@@ -1,7 +1,11 @@
 # Claude Code 設定
 
 ## Git Commit 設定
-- **自動commit提案**: 適切なcommitタイミングでClaude Codeから「commitしましょうか？」と提案する
+- **自動commit提案**: 適切なcommitタイミングでClaude Codeからより自然な表現で提案する
+  - 「変更をcommitしませんか？」
+  - 「そろそろcommitしますか？」
+  - 「ここでcommitしておきますか？」
+  - 「変更をcommitしておいた方がよさそうですね」
 - **提案タイミング**:
   - 複数ファイルの修正完了時
   - 機能追加・バグ修正の完了時
