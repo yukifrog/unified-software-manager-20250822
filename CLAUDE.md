@@ -47,3 +47,12 @@
 - **テストコマンド**: `bats tests/` (Bashテストフレームワーク)
 - **リントコマンド**: `shellcheck *.sh`, `yamllint .github/`
 - **フォーマットコマンド**: `shfmt -w *.sh`
+
+## 自動化設定
+### **Subagent活用**
+- **code-quality-agent**: シェルスクリプト編集完了時に静的解析ツール一括実行
+- **pr-creation-agent**: 機能完成時にPR作成プロセスを自動化
+
+### **Hook活用**  
+- **tool-call-hook**: .shファイル編集時のshellcheck自動実行
+- **user-prompt-submit-hook**: 複数ファイル変更完了時のcommit提案
