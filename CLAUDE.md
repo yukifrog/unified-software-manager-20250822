@@ -60,6 +60,7 @@
 ### **Hook活用**  
 - **tool-call-hook**: .shファイル編集時のshellcheck自動実行
 - **user-prompt-submit-hook**: 複数ファイル変更完了時のcommit提案
+- **user-input-wait-hook**: ユーザー入力待ち状態での通知・状況確認 ⭐
 - **dependency-change-hook**: package.json等変更検知時の依存関係更新提案
 - **large-file-warning-hook**: 大容量ファイル検知時の.gitignore追加提案  
 - **security-scan-hook**: APIキー・シークレット検知時のgitleaks自動実行
@@ -73,3 +74,49 @@
   - 新機能設計、複雑なデバッグ、アーキテクチャ設計
 - **特殊タスク**: Gemini CLI
   - リアルタイム実行確認、Web検索連携、MCP統合
+
+### **ユーザー入力待ちHook詳細** 🔔
+- **通知方法**: Signal Bot via HTTPie (動的メッセージ)
+- **メッセージパターン**:
+  ```bash
+  # 長時間コマンド完了時
+  http POST $SIGNAL_BOT_URL message="✅ $COMMAND_NAME 完了しました (実行時間: ${DURATION}s)"
+  
+  # commit/push提案時  
+  http POST $SIGNAL_BOT_URL message="📝 変更をcommitしますか？ $CHANGED_FILES_COUNT ファイル修正"
+  
+  # エラー発生時
+  http POST $SIGNAL_BOT_URL message="❌ $COMMAND_NAME でエラー: $ERROR_SUMMARY 対処が必要です"
+  
+  # バックグラウンド完了時
+  http POST $SIGNAL_BOT_URL message="🏃 バックグラウンドタスク完了: $BACKGROUND_TASK_NAME"
+  ```
+- **変数展開**:
+  - $COMMAND_NAME: 実行したコマンド名
+  - $DURATION: 実行時間
+  - $CHANGED_FILES_COUNT: 変更ファイル数
+  - $ERROR_SUMMARY: エラー要約
+  - $BACKGROUND_TASK_NAME: バックグラウンドタスク名
+
+### **Signal Bot 環境変数設定** 📡
+```bash
+# ~/.bashrc または ~/.zshrc に追加
+export SIGNAL_BOT_URL="https://your-signal-bot-webhook-url.com/api/message"
+export SIGNAL_BOT_TOKEN="your_bot_token_here"  # 必要に応じて
+export SIGNAL_GROUP_ID="your_group_id"         # グループ通知の場合
+
+# 設定確認
+echo "Signal Bot URL: $SIGNAL_BOT_URL"
+
+# テスト送信
+http POST $SIGNAL_BOT_URL message="🤖 Claude Code通知テスト" \
+  Content-Type:application/json
+```
+
+### **通知設定のカスタマイズ** ⚙️
+```bash
+# 通知レベル設定 (環境変数)
+export CLAUDE_NOTIFY_LEVEL="all"        # all, error-only, important
+export CLAUDE_NOTIFY_MIN_DURATION="30"  # 30秒以上のコマンドのみ通知
+export CLAUDE_NOTIFY_QUIET_HOURS="22-08" # 静音時間帯 (22:00-08:00)
+```
