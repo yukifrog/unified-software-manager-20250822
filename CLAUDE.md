@@ -52,7 +52,24 @@
 ### **Subagent活用**
 - **code-quality-agent**: シェルスクリプト編集完了時に静的解析ツール一括実行
 - **pr-creation-agent**: 機能完成時にPR作成プロセスを自動化
+- **dependency-update-agent**: 全パッケージマネージャー更新チェック→実行→テスト→commit自動化
+- **project-setup-agent**: 新プロジェクト用の環境構築自動化 (mise, pre-commit, direnv等)
+- **documentation-sync-agent**: ドキュメントと実装の整合性チェック・同期
+- **ai-model-switch-agent**: タスクに応じた最適AI選択・実行 ⭐
 
 ### **Hook活用**  
 - **tool-call-hook**: .shファイル編集時のshellcheck自動実行
 - **user-prompt-submit-hook**: 複数ファイル変更完了時のcommit提案
+- **dependency-change-hook**: package.json等変更検知時の依存関係更新提案
+- **large-file-warning-hook**: 大容量ファイル検知時の.gitignore追加提案  
+- **security-scan-hook**: APIキー・シークレット検知時のgitleaks自動実行
+
+### **AI モデル選択ルール** 🧠
+- **軽量タスク** (1-8秒): ollama 1-3Bモデル
+  - ファイル名生成、簡単な修正提案、構文チェック解釈
+- **中程度タスク** (8-15秒): ollama 7-8Bモデル  
+  - コードレビュー、リファクタリング提案、テスト生成
+- **複雑タスク** (15秒+): Claude API
+  - 新機能設計、複雑なデバッグ、アーキテクチャ設計
+- **特殊タスク**: Gemini CLI
+  - リアルタイム実行確認、Web検索連携、MCP統合
