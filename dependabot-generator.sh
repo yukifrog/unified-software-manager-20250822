@@ -204,7 +204,7 @@ generate_nodejs_package() {
 EOF
 
     # プログラム情報を処理してpackage.jsonに追加
-    echo "$programs_info" | while IFS='|' read -r name version category; do
+    echo "$programs_info" | while IFS='|' read -r name version _; do
         if [[ -n "$name" && "$version" != "unknown" ]]; then
             local github_repo
             github_repo=$(get_github_repo_for_dependabot "$name")
@@ -240,14 +240,16 @@ generate_python_requirements() {
 
 EOF
 
-    echo "$programs_info" | while IFS='|' read -r name version category; do
+    echo "$programs_info" | while IFS='|' read -r name version _; do
         if [[ -n "$name" && "$version" != "unknown" ]]; then
             local github_repo
             github_repo=$(get_github_repo_for_dependabot "$name")
             if [[ -n "$github_repo" ]]; then
-                echo "# $name - https://github.com/$github_repo" >> "$output_file"
-                convert_to_python_package "$name" "$version" >> "$output_file"
-                echo >> "$output_file"
+                {
+                    echo "# $name - https://github.com/$github_repo"
+                    convert_to_python_package "$name" "$version"
+                    echo
+                } >> "$output_file"
             fi
         fi
     done
@@ -268,14 +270,16 @@ ruby '3.0.0'
 
 EOF
 
-    echo "$programs_info" | while IFS='|' read -r name version category; do
+    echo "$programs_info" | while IFS='|' read -r name version _; do
         if [[ -n "$name" && "$version" != "unknown" ]]; then
             local github_repo
             github_repo=$(get_github_repo_for_dependabot "$name")
             if [[ -n "$github_repo" ]]; then
-                echo "# $name - https://github.com/$github_repo" >> "$output_file"
-                convert_to_ruby_gem "$name" "$version" >> "$output_file"
-                echo >> "$output_file"
+                {
+                    echo "# $name - https://github.com/$github_repo"
+                    convert_to_ruby_gem "$name" "$version"
+                    echo
+                } >> "$output_file"
             fi
         fi
     done
@@ -297,7 +301,7 @@ go 1.21
 require (
 EOF
 
-    echo "$programs_info" | while IFS='|' read -r name version category; do
+    echo "$programs_info" | while IFS='|' read -r name version _; do
         if [[ -n "$name" && "$version" != "unknown" ]]; then
             local github_repo
             github_repo=$(get_github_repo_for_dependabot "$name")
