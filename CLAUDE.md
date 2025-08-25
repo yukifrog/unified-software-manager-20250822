@@ -79,23 +79,48 @@
 - **通知方法**: Signal Bot via HTTPie (動的メッセージ)
 - **メッセージパターン**:
   ```bash
-  # 長時間コマンド完了時
-  http POST $SIGNAL_BOT_URL message="✅ $COMMAND_NAME 完了しました (実行時間: ${DURATION}s)"
+  # 長時間コマンド完了時 (>30秒)
+  http POST $TELEGRAM_BOT_URL message="✅ $COMMAND_NAME 完了しました (実行時間: ${DURATION}s)"
   
-  # commit/push提案時  
-  http POST $SIGNAL_BOT_URL message="📝 変更をcommitしますか？ $CHANGED_FILES_COUNT ファイル修正"
+  # commit/push/PR提案時  
+  http POST $TELEGRAM_BOT_URL message="📝 変更をcommitしますか？ $CHANGED_FILES_COUNT ファイル修正"
+  http POST $TELEGRAM_BOT_URL message="🚀 リモートにpushしますか？ $COMMITS_COUNT 個のcommit"
+  http POST $TELEGRAM_BOT_URL message="🔀 PRを作成しますか？ $FEATURE_NAME 開発完了"
   
-  # エラー発生時
-  http POST $SIGNAL_BOT_URL message="❌ $COMMAND_NAME でエラー: $ERROR_SUMMARY 対処が必要です"
+  # エラー・警告時
+  http POST $TELEGRAM_BOT_URL message="❌ $COMMAND_NAME でエラー: $ERROR_SUMMARY 対処が必要です"
+  http POST $TELEGRAM_BOT_URL message="⚠️ 大容量ファイル検出: $FILE_SIZE MB ($FILE_NAME)"
+  http POST $TELEGRAM_BOT_URL message="🔒 シークレット検出: $SECRET_TYPE in $FILE_NAME"
   
-  # バックグラウンド完了時
-  http POST $SIGNAL_BOT_URL message="🏃 バックグラウンドタスク完了: $BACKGROUND_TASK_NAME"
+  # システム・環境変化
+  http POST $TELEGRAM_BOT_URL message="📦 新パッケージ検出: $PACKAGE_NAME ($VERSION)"
+  http POST $TELEGRAM_BOT_URL message="🔄 依存関係更新: $UPDATE_COUNT 個の更新候補"
+  http POST $TELEGRAM_BOT_URL message="🏃 バックグラウンドタスク完了: $BACKGROUND_TASK_NAME"
+  
+  # AI・開発支援
+  http POST $TELEGRAM_BOT_URL message="🧠 AIモデル切り替え: $OLD_MODEL → $NEW_MODEL (タスク: $TASK_TYPE)"
+  http POST $TELEGRAM_BOT_URL message="📊 静的解析完了: $ISSUES_COUNT 件の指摘 ($TOOL_NAME)"
+  http POST $TELEGRAM_BOT_URL message="🎯 作業セッション完了: $SESSION_DURATION 分間、$FILES_MODIFIED ファイル修正"
   ```
 - **変数展開**:
   - $COMMAND_NAME: 実行したコマンド名
   - $DURATION: 実行時間
   - $CHANGED_FILES_COUNT: 変更ファイル数
+  - $COMMITS_COUNT: commit数
+  - $FEATURE_NAME: 機能名・ブランチ名
   - $ERROR_SUMMARY: エラー要約
+  - $FILE_SIZE: ファイルサイズ
+  - $FILE_NAME: ファイル名
+  - $SECRET_TYPE: 検出されたシークレット種類
+  - $PACKAGE_NAME: パッケージ名
+  - $VERSION: バージョン
+  - $UPDATE_COUNT: 更新候補数
+  - $OLD_MODEL/$NEW_MODEL: AIモデル名
+  - $TASK_TYPE: タスク種類
+  - $ISSUES_COUNT: 問題数
+  - $TOOL_NAME: 解析ツール名
+  - $SESSION_DURATION: セッション時間
+  - $FILES_MODIFIED: 修正ファイル数
   - $BACKGROUND_TASK_NAME: バックグラウンドタスク名
 
 ### **Signal Bot 環境変数設定** 📡
