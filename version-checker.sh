@@ -181,8 +181,8 @@ get_github_latest_version() {
         fi
         
         if [[ -n "$version" && "$version" != "null" && "$version" != "" ]]; then
-            # vプレフィックスを除去
-            version=$(echo "$version" | sed 's/^v//')
+            # バージョン正規化（プレフィックス除去）
+            version=$(normalize_version "$version")
             
             # キャッシュに保存
             save_to_cache "$repo" "$version"
@@ -201,6 +201,19 @@ get_github_latest_version() {
     return 1
 }
 
+# バージョン正規化 - プレフィックスを除去してバージョン番号のみ抽出
+normalize_version() {
+    local version="$1"
+    if [[ -z "$version" || "$version" == "unknown" ]]; then
+        echo "$version"
+        return
+    fi
+    
+    # 一般的なプレフィックスパターンを除去
+    # Examples: jq-1.8.1 → 1.8.1, v1.2.3 → 1.2.3, tool-v2.0.0 → 2.0.0
+    echo "$version" | sed -E 's/^[a-zA-Z]+-?v?//' | sed 's/^v//'
+}
+
 # バージョン比較 (簡易版)
 version_compare() {
     local ver1="$1"
@@ -210,6 +223,10 @@ version_compare() {
         echo "unknown"
         return 0
     fi
+    
+    # 両方のバージョンを正規化
+    ver1=$(normalize_version "$ver1")
+    ver2=$(normalize_version "$ver2")
     
     if [[ "$ver1" == "$ver2" ]]; then
         echo "equal"
@@ -235,12 +252,7 @@ check_updates() {
     local output_format="${1:-table}"
     local category_filter="${2:-all}"
     
-    # JSON出力時はログをstderrに
-    if [[ "$output_format" == "json" ]]; then
-        info "バージョン更新チェック開始..." >&2
-    else
-        info "バージョン更新チェック開始..."
-    fi
+    info "バージョン更新チェック開始..."
     
     local tools
     tools=$(get_tools_list)
@@ -272,19 +284,11 @@ check_updates() {
         category=$(get_yaml_value "$CONFIG_FILE" "$tool_name" "category")
         
         if [[ -z "$github_repo" ]]; then
-            if [[ "$output_format" == "json" ]]; then
-                warn "GitHubリポジトリが設定されていません: $tool_name" >&2
-            else
-                warn "GitHubリポジトリが設定されていません: $tool_name"
-            fi
+            warn "GitHubリポジトリが設定されていません: $tool_name"
             continue
         fi
         
-        if [[ "$output_format" == "json" ]]; then
-            info "チェック中: $tool_name ($current_version)" >&2
-        else
-            info "チェック中: $tool_name ($current_version)"
-        fi
+        info "チェック中: $tool_name ($current_version)"
         
         local latest_version
         # エラーハンドリングを追加
@@ -294,11 +298,7 @@ check_updates() {
         checked_count=$((checked_count + 1))
         
         if [[ -z "$latest_version" || "$latest_version" == "unknown" ]]; then
-            if [[ "$output_format" == "json" ]]; then
-                warn "バージョン取得失敗: $tool_name ($github_repo)" >&2
-            else
-                warn "バージョン取得失敗: $tool_name ($github_repo)"
-            fi
+            warn "バージョン取得失敗: $tool_name ($github_repo)"
             error_count=$((error_count + 1))
             continue
         fi
@@ -307,11 +307,7 @@ check_updates() {
         comparison=$(version_compare "$current_version" "$latest_version")
         
         if [[ "$comparison" == "github_newer" ]]; then
-            if [[ "$output_format" == "json" ]]; then
-                highlight "更新あり: $tool_name $current_version → $latest_version" >&2
-            else
-                highlight "更新あり: $tool_name $current_version → $latest_version"
-            fi
+            highlight "更新あり: $tool_name $current_version → $latest_version"
             
             # 更新情報を配列に追加
             local update_info="{\"tool\":\"$tool_name\",\"current_version\":\"$current_version\",\"latest_version\":\"$latest_version\",\"github_repo\":\"$github_repo\",\"category\":\"$category\",\"priority\":\"$priority\"}"
