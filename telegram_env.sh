@@ -13,9 +13,7 @@ else
     echo "export TELEGRAM_CHAT_ID=\"your_actual_chat_id\""
 fi
 
-# 通知設定カスタマイズ
-export CLAUDE_NOTIFY_LEVEL="all"        # all, error-only, important  
-export CLAUDE_NOTIFY_MIN_DURATION="30"  # 30秒以上のコマンドのみ通知
-export CLAUDE_NOTIFY_QUIET_HOURS="22-08" # 静音時間帯 (22:00-08:00)
+# 通知設定は ~/.bashrc で設定してください
+# 設定例: export CLAUDE_NOTIFY_QUIET_HOURS="22-08"
 
 echo "🧪 テスト: ./claude_notify.sh \"テストメッセージ\""

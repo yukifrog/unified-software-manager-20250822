@@ -1,0 +1,15 @@
+# Claude Code プロジェクト固有設定例
+# このファイルを .claude-code/config にコピーして使用
+
+# === このプロジェクト専用の設定 ===
+CLAUDE_NOTIFY_QUIET_HOURS="01-07"  # 深夜プロジェクトの場合
+CLAUDE_NOTIFY_MIN_DURATION="60"    # 大規模プロジェクトでは長時間コマンドが多い
+
+# === プロジェクト固有Hook ===
+TOOL_CALL_HOOK_ENABLED="true"      # シェルスクリプトが多いプロジェクト
+SECURITY_SCAN_ENABLED="false"      # 個人プロジェクトではオフ
+
+# === AI設定 ===
+AI_MODEL_SWITCH_ENABLED="false"    # 単純作業プロジェクトではモデル固定
+
+# 注意: この設定はグローバル設定を上書きします
