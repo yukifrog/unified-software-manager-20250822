@@ -1,45 +1,11 @@
 # Requirements file for monitoring DevOps tools via Dependabot
 # This is a monitoring file - not for actual installation
 
-# httpie - https://github.com/httpie/httpie
-httpie==3.2.4
-
-# jq - https://github.com/jqlang/jq
-jq==1.8.1
-
-# httpie - https://github.com/httpie/httpie
-httpie==3.2.4
-
-# jq - https://github.com/jqlang/jq
-jq==1.8.1
-
-# httpie - https://github.com/httpie/httpie
-httpie==3.2.4
-
-# jq - https://github.com/jqlang/jq
-jq==1.8.1
-
-# httpie - https://github.com/httpie/httpie
-httpie==3.2.4
-
-# jq - https://github.com/jqlang/jq
-jq==1.8.1
-
-# node - https://github.com/nodejs/node
-node==24.6.0
-
-# ollama - https://github.com/ollama/ollama
-ollama==0.11.4
-
-# code - https://github.com/microsoft/vscode
-code==1.103.2
-
-# ollama - https://github.com/ollama/ollama
-ollama==0.11.4
-
-# httpie - https://github.com/httpie/httpie
-httpie==3.2.4
-
-# jq - https://github.com/jqlang/jq
-jq==1.8.1
+# Common Python packages for development tools monitoring
+requests==2.31.0
+urllib3==2.0.4
+certifi==2023.7.22
+charset-normalizer==3.2.0
+idna==3.4
+click==8.1.7
 

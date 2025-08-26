@@ -5,45 +5,11 @@ source 'https://rubygems.org'
 
 ruby '3.0.0'
 
-# httpie - https://github.com/httpie/httpie
-gem 'httpie', '3.2.4'
-
-# jq - https://github.com/jqlang/jq
-gem 'jq', '1.8.1'
-
-# httpie - https://github.com/httpie/httpie
-gem 'httpie', '3.2.4'
-
-# jq - https://github.com/jqlang/jq
-gem 'jq', '1.8.1'
-
-# httpie - https://github.com/httpie/httpie
-gem 'httpie', '3.2.4'
-
-# jq - https://github.com/jqlang/jq
-gem 'jq', '1.8.1'
-
-# httpie - https://github.com/httpie/httpie
-gem 'httpie', '3.2.4'
-
-# jq - https://github.com/jqlang/jq
-gem 'jq', '1.8.1'
-
-# node - https://github.com/nodejs/node
-gem 'node', '24.6.0'
-
-# ollama - https://github.com/ollama/ollama
-gem 'ollama', '0.11.4'
-
-# code - https://github.com/microsoft/vscode
-gem 'code', '1.103.2'
-
-# ollama - https://github.com/ollama/ollama
-gem 'ollama', '0.11.4'
-
-# httpie - https://github.com/httpie/httpie
-gem 'httpie', '3.2.4'
-
-# jq - https://github.com/jqlang/jq
-gem 'jq', '1.8.1'
+# Common Ruby gems for development tools monitoring
+gem 'rake', '13.0.6'
+gem 'bundler', '2.4.10' 
+gem 'rspec', '3.12.0'
+gem 'rubocop', '1.56.0'
+gem 'yard', '0.9.34'
+gem 'puma', '6.3.1'
 
