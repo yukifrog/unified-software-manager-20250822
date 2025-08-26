@@ -1,5 +1,10 @@
 # Unified Software Manager Manager - 統合ソフトウェア管理ツール管理ツール
 
+[![CI](https://github.com/yukifrog/unified-software-manager-20250822/actions/workflows/ci.yml/badge.svg)](https://github.com/yukifrog/unified-software-manager-20250822/actions/workflows/ci.yml)
+[![Test Suite](https://github.com/yukifrog/unified-software-manager-20250822/actions/workflows/test.yml/badge.svg)](https://github.com/yukifrog/unified-software-manager-20250822/actions/workflows/test.yml)
+[![Shell Scripts](https://img.shields.io/badge/shell-bash-green.svg)](https://www.gnu.org/software/bash/)
+[![Tests](https://img.shields.io/badge/tests-bats-orange.svg)](https://github.com/bats-core/bats-core)
+
 統合ソフトウェア管理ツール管理ツール - システム内のすべての実行可能プログラムを検出・分類し、適切なアップデータを使用して統合管理するツールセットです。
 
 ## 🆕 YAML形式対応
@@ -193,6 +198,49 @@ sudo ./unified-software-manager-manager.sh --update all
 初回スキャンを実行してください：
 ```bash
 ./unified-software-manager-manager.sh --scan
+```
+
+## テスト
+
+このプロジェクトは包括的なテストスイートを持っています：
+
+### テスト実行方法
+
+```bash
+# 全テスト実行
+make test
+# または
+bats tests/
+
+# 単体テストのみ
+make test-unit
+bats tests/version-checker.bats
+
+# 結合テストのみ
+make test-integration
+bats tests/version-checker-integration.bats
+```
+
+### テスト構成
+
+- **Unit Tests** (18テスト): `normalize_version()`, `version_compare()` 関数レベル
+- **Integration Tests** (11テスト): コマンドライン引数、JSON出力、エラーハンドリング
+- **GitHub Actions**: 自動CI/CD、セキュリティスキャン、パフォーマンステスト
+
+### 開発環境セットアップ
+
+```bash
+# 開発依存関係をインストール
+make install-deps
+
+# 開発環境セットアップ
+make setup
+
+# コードの静的解析
+make lint
+
+# 全テスト + リント実行
+make ci
 ```
 
 ## ライセンス
