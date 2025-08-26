@@ -60,12 +60,12 @@ get_yaml_value() {
     local field="$3"
     
     awk -v tool="$tool_name" -v field="$field" '
-    /^[[:space:]]*'$tool_name':[[:space:]]*$/ { in_tool=1; next }
+    $0 ~ "^[[:space:]]*" tool ":[[:space:]]*$" { in_tool=1; next }
     in_tool && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
         if (!/^[[:space:]]{4}/) in_tool=0 
     }
-    in_tool && /^[[:space:]]{4}'$field':[[:space:]]/ {
-        gsub(/^[[:space:]]*'$field':[[:space:]]*"?/, "")
+    in_tool && $0 ~ "^[[:space:]]{4}" field ":[[:space:]]" {
+        gsub("^[[:space:]]*" field ":[[:space:]]*\"?", "")
         gsub(/".*$/, "")
         print
         exit
@@ -162,14 +162,14 @@ get_github_latest_version() {
     local api_url="https://api.github.com/repos/$repo/releases/latest"
     
     # GitHub Token があれば使用
-    local auth_header=""
+    local auth_args=()
     if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-        auth_header="-H \"Authorization: token $GITHUB_TOKEN\""
+        auth_args=(-H "Authorization: token $GITHUB_TOKEN")
     fi
     
     local response
     # curlのタイムアウトとエラーハンドリングを強化
-    response=$(timeout 15 curl -s --fail $auth_header "$api_url" 2>/dev/null || echo "")
+    response=$(timeout 15 curl -s --fail "${auth_args[@]}" "$api_url" 2>/dev/null || echo "")
     
     if [[ -n "$response" && "$response" != *"rate limit"* && "$response" != *"Not Found"* ]]; then
         local version
