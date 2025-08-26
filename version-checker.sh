@@ -3,7 +3,7 @@
 # バージョンチェッカースクリプト
 # GitHub APIを使用してツールの最新バージョンを取得し、現在のバージョンと比較
 
-set -euo pipefail
+set -eo pipefail  # -u を削除してunbound variable でスクリプトが停止しないように
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/monitoring-configs/tools.yaml"
@@ -168,7 +168,8 @@ get_github_latest_version() {
     fi
     
     local response
-    response=$(timeout 10 curl -s $auth_header "$api_url" 2>/dev/null || echo "")
+    # curlのタイムアウトとエラーハンドリングを強化
+    response=$(timeout 15 curl -s --fail $auth_header "$api_url" 2>/dev/null || echo "")
     
     if [[ -n "$response" && "$response" != *"rate limit"* && "$response" != *"Not Found"* ]]; then
         local version
@@ -286,10 +287,18 @@ check_updates() {
         fi
         
         local latest_version
-        latest_version=$(get_github_latest_version "$github_repo")
+        # エラーハンドリングを追加
+        if ! latest_version=$(get_github_latest_version "$github_repo" 2>/dev/null); then
+            latest_version="unknown"
+        fi
         checked_count=$((checked_count + 1))
         
-        if [[ "$latest_version" == "unknown" ]]; then
+        if [[ -z "$latest_version" || "$latest_version" == "unknown" ]]; then
+            if [[ "$output_format" == "json" ]]; then
+                warn "バージョン取得失敗: $tool_name ($github_repo)" >&2
+            else
+                warn "バージョン取得失敗: $tool_name ($github_repo)"
+            fi
             error_count=$((error_count + 1))
             continue
         fi
@@ -369,7 +378,9 @@ check_single_tool() {
     echo "  GitHubリポジトリ: $github_repo"
     
     local latest_version
-    latest_version=$(get_github_latest_version "$github_repo")
+    if ! latest_version=$(get_github_latest_version "$github_repo" 2>/dev/null); then
+        latest_version="unknown"
+    fi
     echo "  最新バージョン: $latest_version"
     
     local comparison
@@ -462,4 +473,8 @@ main() {
     esac
 }
 
-main "$@"
+# エラーハンドリング付きでメイン処理実行
+if ! main "$@"; then
+    error "処理中にエラーが発生しましたが、可能な限り処理を続行しました"
+    exit 1
+fi
