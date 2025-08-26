@@ -47,12 +47,34 @@
 - **テストコマンド**: `bats tests/` (Bashテストフレームワーク)
 - **リントコマンド**: `shellcheck *.sh`, `yamllint .github/`
 - **フォーマットコマンド**: `shfmt -w *.sh`
+- **バージョンチェッカー**: `./version-checker.sh --check-all` (全ツールの更新確認)
+
+## ツール更新方針
+### **sudo必要ツール**
+- ollama, terraform等のシステム全体インストールツールはClaude Codeセッション外で手動更新
+- ディスク容量節約とセキュリティの観点から推奨
+- 更新後は `tools.yaml` のcurrent_versionを手動更新
+
+### **バイナリダウンロード型ツール**  
+- ~/.local/bin/ 配下に配置してPATH経由で実行
+- 自動更新可能: fzf, bat, fd, lazygit, delta, btop, zoxide, yq, direnv等
+- 更新後は `tools.yaml` のcurrent_versionを自動更新
+
+### **パッケージマネージャー型ツール**
+- npm global: `npm update -g <package>` で更新
+- pip: `pip install --user --upgrade <package>` で更新  
+- cargo: `cargo install <package>` で更新
+- Dependabotモニタリングファイルで更新通知受信
 
 ## 自動化設定
 ### **Subagent活用**
 - **code-quality-agent**: シェルスクリプト編集完了時に静的解析ツール一括実行
 - **pr-creation-agent**: 機能完成時にPR作成プロセスを自動化
 - **dependency-update-agent**: 全パッケージマネージャー更新チェック→実行→テスト→commit自動化
+  - バージョンチェッカー実行 (`./version-checker.sh --check-all`)
+  - 各ツールの自動更新実行
+  - tools.yaml の current_version フィールド自動更新
+  - Dependabotモニタリングファイル同期 (package.json, requirements.txt等)
 - **project-setup-agent**: 新プロジェクト用の環境構築自動化 (mise, pre-commit, direnv等)
 - **documentation-sync-agent**: ドキュメントと実装の整合性チェック・同期
 - **ai-model-switch-agent**: タスクに応じた最適AI選択・実行 ⭐
@@ -145,4 +167,46 @@ http POST $SIGNAL_BOT_URL message="🤖 Claude Code通知テスト" \
 # export CLAUDE_NOTIFY_MIN_DURATION="30"  # 30秒以上のコマンドのみ通知
 # export CLAUDE_NOTIFY_QUIET_HOURS="22-08" # 静音時間帯 (22:00-08:00)
 # export CLAUDE_NOTIFY_ENABLED="true"     # 通知の有効/無効
+```
+
+## Dependabotモニタリング設定 📦
+### **監視対象ファイル**
+- `monitoring/nodejs-tools/package.json` - npm グローバルパッケージ監視
+- `monitoring/python-tools/requirements.txt` - pip パッケージ監視
+- `monitoring/ruby-tools/Gemfile` - gem パッケージ監視
+- `monitoring/go-tools/go.mod` - Go モジュール監視
+
+### **監視対象パッケージ例**
+```json
+// package.json
+{
+  "@google/gemini-cli": "0.1.22",
+  "@anthropic-ai/claude-code": "1.0.92"
+}
+```
+
+```txt
+# requirements.txt  
+httpie==3.2.4
+requests==2.31.0
+```
+
+### **更新ワークフロー**
+1. Dependabotが新バージョンを検知→PR自動作成
+2. Claude Code でPRレビュー→マージ
+3. tools.yamlのcurrent_version手動更新
+4. 実際のツール更新 (手動/自動選択)
+
+## 主要ツール最新バージョン確認 🔍
+```bash
+# バージョン一括チェック
+./version-checker.sh --check-all
+
+# 個別確認
+ollama --version        # 0.11.7 (sudo必要)
+gemini -v              # 0.1.22 (npm)
+fzf --version          # 0.65.1 (binary)
+bat --version          # 0.25.0 (binary)
+lazygit --version      # 0.54.2 (binary)
+btop --version         # 1.4.4+GPU (source build)
 ```

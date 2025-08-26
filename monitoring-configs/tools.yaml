@@ -13,39 +13,39 @@ github_api:
 
 # 監視対象ツール定義
 tools:
-  # Kubernetes関連
-  kubectl:
-    current_version: "1.25.4"
-    github_repo: "kubernetes/kubernetes"
-    update_method: "binary_download"
-    install_command: "curl -LO https://dl.k8s.io/release/v{version}/bin/linux/amd64/kubectl"
-    category: "kubernetes"
-    priority: "high"
-    
-  helm:
-    current_version: "3.10.0"
-    github_repo: "helm/helm"
-    update_method: "binary_download"
-    category: "kubernetes"
-    priority: "high"
+  # Kubernetes関連 - 無効化
+  # kubectl:
+  #   current_version: "not_installed"
+  #   github_repo: "kubernetes/kubernetes"
+  #   update_method: "binary_download"
+  #   install_command: "curl -LO https://dl.k8s.io/release/v{version}/bin/linux/amd64/kubectl"
+  #   category: "kubernetes"
+  #   priority: "high"
+  #   
+  # helm:
+  #   current_version: "not_installed"
+  #   github_repo: "helm/helm"
+  #   update_method: "binary_download"
+  #   category: "kubernetes"
+  #   priority: "high"
 
-  kind:
-    current_version: "0.17.0"
-    github_repo: "kubernetes-sigs/kind"
-    update_method: "binary_download"
-    category: "kubernetes"
-    priority: "medium"
+  # kind:
+  #   current_version: "0.17.0"
+  #   github_repo: "kubernetes-sigs/kind"
+  #   update_method: "binary_download"
+  #   category: "kubernetes"
+  #   priority: "medium"
 
-  k9s:
-    current_version: "0.26.0"
-    github_repo: "derailed/k9s"
-    update_method: "binary_download"
-    category: "kubernetes"
-    priority: "medium"
+  # k9s:
+  #   current_version: "0.26.0"
+  #   github_repo: "derailed/k9s"
+  #   update_method: "binary_download"
+  #   category: "kubernetes"
+  #   priority: "medium"
 
   # HashiCorp Tools
   terraform:
-    current_version: "1.3.0"
+    current_version: "not_installed"
     github_repo: "hashicorp/terraform"
     update_method: "binary_download"
     category: "infrastructure"
@@ -89,14 +89,14 @@ tools:
     priority: "high"
 
   yq:
-    current_version: "4.25.0"
+    current_version: "4.47.1"
     github_repo: "mikefarah/yq"
     update_method: "binary_download"
     category: "cli"
     priority: "medium"
 
   fzf:
-    current_version: "0.35.0"
+    current_version: "0.65.1"
     github_repo: "junegunn/fzf"
     update_method: "binary_download"
     category: "cli"
@@ -104,21 +104,21 @@ tools:
 
   # Modern CLI replacements
   bat:
-    current_version: "0.22.0"
+    current_version: "0.25.0"
     github_repo: "sharkdp/bat"
     update_method: "binary_download"
     category: "cli"
     priority: "low"
 
   fd:
-    current_version: "8.4.0"
+    current_version: "10.3.0"
     github_repo: "sharkdp/fd"
     update_method: "binary_download"
     category: "cli"
     priority: "low"
 
   ripgrep:
-    current_version: "13.0.0"
+    current_version: "14.1.1"
     github_repo: "BurntSushi/ripgrep"
     update_method: "binary_download"
     category: "cli"
@@ -133,7 +133,7 @@ tools:
     priority: "medium"
 
   zoxide:
-    current_version: "0.9.6"
+    current_version: "0.9.8"
     github_repo: "ajeetdsouza/zoxide"
     update_method: "binary_download"
     install_command: "curl -L https://github.com/ajeetdsouza/zoxide/releases/download/v{version}/zoxide-{version}-x86_64-unknown-linux-musl.tar.gz | tar xzf - -C /tmp && mv /tmp/zoxide ~/.local/bin/"
@@ -157,7 +157,7 @@ tools:
     priority: "high"
 
   direnv:
-    current_version: "2.35.0"
+    current_version: "2.37.1"
     github_repo: "direnv/direnv"
     update_method: "binary_download"
     install_command: "curl -L https://github.com/direnv/direnv/releases/download/v{version}/direnv.linux-amd64 -o ~/.local/bin/direnv && chmod +x ~/.local/bin/direnv"
@@ -165,7 +165,7 @@ tools:
     priority: "high"
 
   watchexec:
-    current_version: "2.3.2"
+    current_version: "not_installed"
     github_repo: "watchexec/watchexec"
     update_method: "binary_download"
     install_command: "curl -L https://github.com/watchexec/watchexec/releases/download/v{version}/watchexec-{version}-x86_64-unknown-linux-musl.tar.xz | tar xJf - -C /tmp && mv /tmp/watchexec-{version}-x86_64-unknown-linux-musl/watchexec ~/.local/bin/"
@@ -173,7 +173,7 @@ tools:
     priority: "medium"
 
   btop:
-    current_version: "1.4.0"
+    current_version: "1.4.4"
     github_repo: "aristocratos/btop"
     update_method: "binary_download"
     install_command: "curl -L https://github.com/aristocratos/btop/releases/download/v{version}/btop-x86_64-linux-musl.tbz | tar xjf - -C /tmp && mv /tmp/btop/bin/btop ~/.local/bin/"
@@ -181,7 +181,7 @@ tools:
     priority: "high"
 
   dust:
-    current_version: "1.1.1"
+    current_version: "not_installed"
     github_repo: "bootandy/dust"
     update_method: "binary_download"
     install_command: "curl -L https://github.com/bootandy/dust/releases/download/v{version}/dust-v{version}-x86_64-unknown-linux-musl.tar.gz | tar xzf - -C /tmp && mv /tmp/dust-v{version}-x86_64-unknown-linux-musl/dust ~/.local/bin/"
@@ -197,7 +197,7 @@ tools:
     priority: "low"
 
   delta:
-    current_version: "0.15.0"
+    current_version: "0.18.2"
     github_repo: "dandavison/delta"
     update_method: "binary_download"
     category: "cli"
@@ -205,18 +205,18 @@ tools:
 
   # Development Tools
   lazygit:
-    current_version: "0.36.0"
+    current_version: "0.54.2"
     github_repo: "jesseduffield/lazygit"
     update_method: "binary_download"
     category: "development"
     priority: "medium"
 
-  hugo:
-    current_version: "0.108.0"
-    github_repo: "gohugoio/hugo"
-    update_method: "binary_download"
-    category: "development"
-    priority: "low"
+  # hugo:
+  #   current_version: "0.108.0"
+  #   github_repo: "gohugoio/hugo"
+  #   update_method: "binary_download"
+  #   category: "development"
+  #   priority: "low"
 
   # Container Tools
   dive:
@@ -278,7 +278,7 @@ tools:
 
   # AI/ML Tools
   ollama:
-    current_version: "0.1.17"
+    current_version: "0.11.7"
     github_repo: "ollama/ollama"
     update_method: "binary_download"
     category: "ai"
