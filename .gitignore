@@ -44,8 +44,12 @@ Thumbs.db
 # Telegram Bot機密情報
 .env.telegram
 
-# Command artifacts and temporary files
-[0-9]*
-[A-Z]*
+# Command artifacts and temporary files (specific patterns only)
+[0-9]*.tmp
+[0-9]*.log
+[0-9]*.out
+TEMP_*
+OUTPUT_*
+RESULT_*
 ansible.cfg
 somelog.txt
