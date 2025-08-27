@@ -43,3 +43,9 @@ ehthumbs.db
 Thumbs.db
 # Telegram Bot機密情報
 .env.telegram
+
+# Command artifacts and temporary files
+[0-9]*
+[A-Z]*
+ansible.cfg
+somelog.txt
