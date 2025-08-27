@@ -4,6 +4,7 @@
 
 # 機密情報を.env.telegramから読み込み
 if [ -f ".env.telegram" ]; then
+    # shellcheck source=/dev/null
     source .env.telegram
     echo "✅ Telegram認証情報を読み込みました"
 else
