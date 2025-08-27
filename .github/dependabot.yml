@@ -36,7 +36,7 @@ updates:
       - "python-tools"
       - "automated-pr"
 
-  # Monitor Ruby/gem dependencies
+  # Monitor Ruby/gem dependencies for Claude Code integration tools
   - package-ecosystem: "bundler"
     directory: "/monitoring/ruby-tools"
     schedule:
@@ -51,22 +51,23 @@ updates:
       - "dependencies"
       - "ruby-tools"
       - "automated-pr"
+      - "claude-code-integration"
 
-  # Monitor Go modules
-  - package-ecosystem: "gomod"
-    directory: "/monitoring/go-tools"
-    schedule:
-      interval: "daily"
-      time: "10:30"
-      timezone: "Asia/Tokyo" 
-    open-pull-requests-limit: 10
-    commit-message:
-      prefix: "deps(go-tools)"
-      include: "scope"
-    labels:
-      - "dependencies"
-      - "go-tools"
-      - "automated-pr"
+  # Go modules monitoring disabled - Go not installed
+  # - package-ecosystem: "gomod"
+  #   directory: "/monitoring/go-tools"
+  #   schedule:
+  #     interval: "daily"
+  #     time: "10:30"
+  #     timezone: "Asia/Tokyo" 
+  #   open-pull-requests-limit: 10
+  #   commit-message:
+  #     prefix: "deps(go-tools)"
+  #     include: "scope"
+  #   labels:
+  #     - "dependencies"
+  #     - "go-tools"
+  #     - "automated-pr"
 
   # Monitor GitHub Actions
   - package-ecosystem: "github-actions"

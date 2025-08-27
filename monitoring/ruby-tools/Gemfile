@@ -1,15 +1,22 @@
-# Gemfile for monitoring DevOps tools via Dependabot
-# This is a monitoring file - not for actual installation
+# Gemfile for monitoring Ruby presentation & documentation tools
+# Focus on Jekyll and Rabbit for static site generation and presentations
+# This is a monitoring file for Dependabot - not for actual bundle install
 
 source 'https://rubygems.org'
 
-ruby '3.0.0'
+ruby '3.1.0'  # Common Ruby version for monitoring
 
-# Common Ruby gems for development tools monitoring
-gem 'rake', '13.0.6'
-gem 'bundler', '2.4.10' 
-gem 'rspec', '3.12.0'
-gem 'rubocop', '1.56.0'
-gem 'yard', '0.9.34'
-gem 'puma', '6.3.1'
+# 🎨 Static Site Generation & Presentation Tools
+gem 'jekyll', '~> 4.3.0'               # Static site generator for blogs/docs
+gem 'rabbit', '~> 3.0.3'               # Ruby-based presentation tool
+gem 'rdoc', '~> 6.6.0'                 # Ruby documentation generator
 
+# Jekyll ecosystem essentials
+gem 'kramdown-parser-gfm', '~> 1.1.0'  # GitHub Flavored Markdown parser for Jekyll
+gem 'rouge', '~> 4.4.0'                # Syntax highlighting for Jekyll
+gem 'jekyll-feed', '~> 0.17.0'         # RSS/Atom feed generator for Jekyll
+
+group :development do
+  # Jekyll development utilities
+  gem 'jekyll-compose', '~> 0.12.0'    # Jekyll post/page creation helpers
+end
