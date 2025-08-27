@@ -13,37 +13,37 @@ github_api:
 
 # 監視対象ツール定義
 tools:
-  # Kubernetes関連 - 無効化
-  # kubectl:
-  #   current_version: "not_installed"
-  #   github_repo: "kubernetes/kubernetes"
-  #   update_method: "binary_download"
-  #   install_command: "curl -LO https://dl.k8s.io/release/v{version}/bin/linux/amd64/kubectl"
-  #   category: "kubernetes"
-  #   priority: "high"
-  #
-  # helm:
-  #   current_version: "not_installed"
-  #   github_repo: "helm/helm"
-  #   update_method: "binary_download"
-  #   category: "kubernetes"
-  #   priority: "high"
+# Kubernetes関連 - 無効化
+# kubectl:
+#   current_version: "not_installed"
+#   github_repo: "kubernetes/kubernetes"
+#   update_method: "binary_download"
+#   install_command: "curl -LO https://dl.k8s.io/release/v{version}/bin/linux/amd64/kubectl"
+#   category: "kubernetes"
+#   priority: "high"
+#
+# helm:
+#   current_version: "not_installed"
+#   github_repo: "helm/helm"
+#   update_method: "binary_download"
+#   category: "kubernetes"
+#   priority: "high"
 
-  # kind:
-  #   current_version: "0.17.0"
-  #   github_repo: "kubernetes-sigs/kind"
-  #   update_method: "binary_download"
-  #   category: "kubernetes"
-  #   priority: "medium"
+# kind:
+#   current_version: "0.17.0"
+#   github_repo: "kubernetes-sigs/kind"
+#   update_method: "binary_download"
+#   category: "kubernetes"
+#   priority: "medium"
 
-  # k9s:
-  #   current_version: "0.26.0"
-  #   github_repo: "derailed/k9s"
-  #   update_method: "binary_download"
-  #   category: "kubernetes"
-  #   priority: "medium"
+# k9s:
+#   current_version: "0.26.0"
+#   github_repo: "derailed/k9s"
+#   update_method: "binary_download"
+#   category: "kubernetes"
+#   priority: "medium"
 
-  # HashiCorp Tools
+# HashiCorp Tools
 terraform:
   current_version: "not_installed"
   github_repo: "hashicorp/terraform"
