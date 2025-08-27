@@ -28,7 +28,7 @@ jobs:
         shellcheck lib/version-functions.sh
 
     - name: YAML validation
-      run: yamllint monitoring-configs/tools.yaml
+      run: yamllint -c .yamllint.yml monitoring-configs/tools.yaml
 
     - name: Smoke test - help command
       run: ./version-checker.sh --help
