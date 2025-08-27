@@ -45,12 +45,12 @@ get_program_value() {
     
     # プログラム名の後の該当フィールドを探す
     awk -v prog="$prog_name" -v field="$field" '
-    /^[[:space:]]*'$prog_name':[[:space:]]*$/ { in_prog=1; next }
+    /^[[:space:]]*'"$prog_name"':[[:space:]]*$/ { in_prog=1; next }
     in_prog && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
         if (!/^[[:space:]]{4}/) in_prog=0 
     }
-    in_prog && /^[[:space:]]{4}'$field':[[:space:]]/ {
-        sub(/^[[:space:]]*'$field':[[:space:]]*/, "")
+    in_prog && /^[[:space:]]{4}'"$field"':[[:space:]]/ {
+        sub(/^[[:space:]]*'"$field"':[[:space:]]*/, "")
         gsub(/^"/, ""); gsub(/"$/, "")
         print
         exit
@@ -125,7 +125,8 @@ scan_programs() {
     info "プログラムスキャンを開始..."
     
     # 一時的なスキャン結果
-    local temp_file=$(mktemp)
+    local temp_file
+    temp_file=$(mktemp)
     
     # PATH内の主要ディレクトリをスキャン
     local scan_dirs=("/usr/bin" "/usr/local/bin" "/bin")
@@ -137,7 +138,8 @@ scan_programs() {
             
             # 実行ファイルを検出（最初の50個まで）
             find "$dir" -maxdepth 1 -type f -executable 2>/dev/null | head -50 | while IFS= read -r file; do
-                local name=$(basename "$file")
+                local name
+                name=$(basename "$file")
                 local category="unknown"
                 local package_name="none"
                 local version="unknown"
@@ -189,10 +191,14 @@ statistics:
 EOF
 
     # 統計情報を追加
-    local apt_count=$(grep -c "|apt|" "$scan_file" 2>/dev/null || echo 0)
-    local snap_count=$(grep -c "|snap|" "$scan_file" 2>/dev/null || echo 0)
-    local manual_count=$(grep -c "|manual|" "$scan_file" 2>/dev/null || echo 0)
-    local unknown_count=$(grep -c "|unknown|" "$scan_file" 2>/dev/null || echo 0)
+    local apt_count
+    apt_count=$(grep -c "|apt|" "$scan_file" 2>/dev/null || echo 0)
+    local snap_count
+    snap_count=$(grep -c "|snap|" "$scan_file" 2>/dev/null || echo 0)
+    local manual_count
+    manual_count=$(grep -c "|manual|" "$scan_file" 2>/dev/null || echo 0)
+    local unknown_count
+    unknown_count=$(grep -c "|unknown|" "$scan_file" 2>/dev/null || echo 0)
     
     cat >> "$DATA_FILE" << EOF
   apt: $apt_count
@@ -255,9 +261,12 @@ list_programs() {
     
     echo "$programs" | sort | uniq | while IFS= read -r prog_name; do
         if [[ -n "$prog_name" ]]; then
-            local prog_category=$(get_program_value "$prog_name" "category")
-            local prog_path=$(get_program_value "$prog_name" "path")
-            local prog_version=$(get_program_value "$prog_name" "version")
+            local prog_category
+            prog_category=$(get_program_value "$prog_name" "category")
+            local prog_path
+            prog_path=$(get_program_value "$prog_name" "path")
+            local prog_version
+            prog_version=$(get_program_value "$prog_name" "version")
             
             if [[ "$category" == "all" || "$prog_category" == "$category" ]]; then
                 echo "$prog_name [$prog_category] $prog_version - $prog_path"
