@@ -4,7 +4,7 @@
   "description": "Monitoring file for tracking DevOps tools releases via Dependabot",
   "private": true,
   "dependencies": {
-    "@google/gemini-cli": "0.1.22",
+    "@google/gemini-cli": "0.2.1",
     "@anthropic-ai/claude-code": "1.0.92"
   },
   "devDependencies": {},
