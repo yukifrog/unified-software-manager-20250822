@@ -194,7 +194,7 @@ jobs:
           echo "### --check command test" >> $GITHUB_STEP_SUMMARY
 
           # Test basic --check functionality (handles missing tools gracefully)
-          if timeout 30 ./version-checker.sh --check terraform 2>&1 | \
+          if timeout 30 ./version-checker.sh --check non-existent-test-tool 2>&1 | \
              grep -E "(設定に見つかりません|エラーが発生しました)" > /dev/null; then
             echo "✅ --check command handles missing tools gracefully" >> $GITHUB_STEP_SUMMARY
           else
