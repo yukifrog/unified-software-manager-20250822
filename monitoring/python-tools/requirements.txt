@@ -2,7 +2,7 @@
 # This is a monitoring file - not for actual installation
 
 # Common Python packages for development tools monitoring
-requests==2.31.0
+requests==2.32.5
 urllib3==2.0.4
 certifi==2023.7.22
 charset-normalizer==3.2.0
