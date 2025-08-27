@@ -65,7 +65,7 @@ update_yaml_version() {
     temp_file=$(mktemp)
     
     awk -v tool="$tool_name" -v new_ver="$new_version" '
-    /^[[:space:]]*'$tool_name':[[:space:]]*$/ { in_tool=1; print; next }
+    /^[[:space:]]*'"$tool_name"':[[:space:]]*$/ { in_tool=1; print; next }
     in_tool && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
         if (!/^[[:space:]]{4}/) in_tool=0 
     }
@@ -252,10 +252,10 @@ create_manual_pr() {
     local category
     local priority
     
-    current_version=$(awk -v tool="$tool_name" '/^[[:space:]]*'$tool_name':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*current_version:[[:space:]]/ {gsub(/^[[:space:]]*current_version:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
-    github_repo=$(awk -v tool="$tool_name" '/^[[:space:]]*'$tool_name':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*github_repo:[[:space:]]/ {gsub(/^[[:space:]]*github_repo:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
-    category=$(awk -v tool="$tool_name" '/^[[:space:]]*'$tool_name':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*category:[[:space:]]/ {gsub(/^[[:space:]]*category:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
-    priority=$(awk -v tool="$tool_name" '/^[[:space:]]*'$tool_name':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*priority:[[:space:]]/ {gsub(/^[[:space:]]*priority:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
+    current_version=$(awk -v tool="$tool_name" '/^[[:space:]]*'"$tool_name"':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*current_version:[[:space:]]/ {gsub(/^[[:space:]]*current_version:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
+    github_repo=$(awk -v tool="$tool_name" '/^[[:space:]]*'"$tool_name"':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*github_repo:[[:space:]]/ {gsub(/^[[:space:]]*github_repo:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
+    category=$(awk -v tool="$tool_name" '/^[[:space:]]*'"$tool_name"':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*category:[[:space:]]/ {gsub(/^[[:space:]]*category:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
+    priority=$(awk -v tool="$tool_name" '/^[[:space:]]*'"$tool_name"':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*priority:[[:space:]]/ {gsub(/^[[:space:]]*priority:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$CONFIG_FILE")
     
     if [[ -z "$current_version" || -z "$github_repo" ]]; then
         error "ツール '$tool_name' の設定が見つかりません"
