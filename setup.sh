@@ -38,10 +38,10 @@ check_dependencies() {
     local missing_deps=()
     
     # 必須依存関係
-    # jqは不要になりました（YAML版では使用しない）
-    # if ! command -v jq >/dev/null 2>&1; then
-    #     missing_deps+=("jq")
-    # fi
+    # yqが必要になりました（YAML解析に使用）
+    if ! command -v yq >/dev/null 2>&1; then
+        missing_deps+=("yq")
+    fi
     
     if ! command -v git >/dev/null 2>&1; then
         missing_deps+=("git")

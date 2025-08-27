@@ -59,13 +59,14 @@ install-deps: ## Install development dependencies
 	@echo "Installing development dependencies..."
 	@if command -v apt-get >/dev/null 2>&1; then \
 		sudo apt-get update; \
-		sudo apt-get install -y bats jq curl shellcheck yamllint; \
+		sudo apt-get install -y bats jq yq curl shellcheck yamllint; \
 	elif command -v brew >/dev/null 2>&1; then \
-		brew install bats-core jq curl shellcheck yamllint; \
+		brew install bats-core jq yq curl shellcheck yamllint; \
 	else \
 		echo "Package manager not supported. Please install manually:"; \
 		echo "- bats-core"; \
 		echo "- jq"; \
+		echo "- yq"; \
 		echo "- curl"; \
 		echo "- shellcheck"; \
 		echo "- yamllint"; \
