@@ -86,7 +86,7 @@ get_github_latest_version() {
             
             if [[ -n "$version" && "$version" != "null" ]]; then
                 # vプレフィックスを除去
-                version=$(echo "$version" | sed 's/^v//')
+                version=${version#v}
                 
                 # キャッシュに保存
                 local current_time
@@ -208,7 +208,7 @@ compare_versions() {
         
         # プログラム情報を取得
         local prog_category
-        prog_category=$(awk -v prog="$prog_name" '/^[[:space:]]*'$prog_name':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*category:[[:space:]]/ {gsub(/^[[:space:]]*category:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$DATA_FILE")
+        prog_category=$(awk -v prog="$prog_name" '/^[[:space:]]*'"$prog_name"':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*category:[[:space:]]/ {gsub(/^[[:space:]]*category:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$DATA_FILE")
         
         # カテゴリフィルター
         if [[ "$category_filter" != "all" && "$prog_category" != "$category_filter" ]]; then
@@ -221,7 +221,7 @@ compare_versions() {
         fi
         
         local prog_version
-        prog_version=$(awk -v prog="$prog_name" '/^[[:space:]]*'$prog_name':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*version:[[:space:]]/ {gsub(/^[[:space:]]*version:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$DATA_FILE")
+        prog_version=$(awk -v prog="$prog_name" '/^[[:space:]]*'"$prog_name"':[[:space:]]*$/ {found=1; next} found && /^[[:space:]]*version:[[:space:]]/ {gsub(/^[[:space:]]*version:[[:space:]]*"?/, ""); gsub(/".*$/, ""); print; exit}' "$DATA_FILE")
         
         # GitHubリポジトリ取得
         local github_repo

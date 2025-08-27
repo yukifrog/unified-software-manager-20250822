@@ -153,7 +153,7 @@ create_symlinks() {
         # PATHに含まれているかチェック
         if [[ ":$PATH:" != *":$bin_dir:"* ]]; then
             warn "$bin_dir がPATHに含まれていません"
-            info "~/.bashrc または ~/.zshrc に以下を追加してください:"
+            info "$HOME/.bashrc または $HOME/.zshrc に以下を追加してください:"
             echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
         fi
         
