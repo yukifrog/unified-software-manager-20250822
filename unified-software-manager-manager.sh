@@ -10,52 +10,36 @@ CONFIG_DIR="$HOME/.unified-software-manager-manager"
 DATA_FILE="$CONFIG_DIR/programs.yaml"
 LOG_FILE="$CONFIG_DIR/update.log"
 
-# YAML処理関数（内蔵）
+# YAML処理関数（yq使用）
 yaml_list_section() {
     local yaml_file="$1"
     local section="$2"
     
-    awk -v section="$section" '
-    BEGIN { in_section = 0; section_indent = -1 }
-    /^[[:space:]]*[^#[:space:]]/ {
-        match($0, /^[[:space:]]*/); 
-        indent = RLENGTH
-        
-        gsub(/^[[:space:]]*/, "")
-        gsub(/:.*$/, "")
-        
-        if (indent == 0 && $0 == section) {
-            in_section = 1
-            section_indent = 0
-        } else if (in_section) {
-            if (indent <= section_indent && section_indent >= 0) {
-                in_section = 0
-            } else if (indent == 2) {
-                print $0
-            }
-        }
-    }' "$yaml_file"
+    # yqを使用してセクション内のキー一覧を取得
+    yq eval ".${section} | keys | .[]" "$yaml_file" 2>/dev/null | {
+        while read -r key; do
+            if [[ "$key" != "null" ]]; then
+                echo "$key"
+            fi
+        done
+    }
 }
 
-# YAML値取得（簡易版）
+# YAML値取得（yq使用）
 get_program_value() {
     local prog_name="$1"
     local field="$2"
     local yaml_file="$DATA_FILE"
     
-    # プログラム名の後の該当フィールドを探す
-    awk -v prog="$prog_name" -v field="$field" '
-    /^[[:space:]]*'"$prog_name"':[[:space:]]*$/ { in_prog=1; next }
-    in_prog && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
-        if (!/^[[:space:]]{4}/) in_prog=0 
+    # yqを使用してYAMLから値を取得
+    yq eval ".programs.${prog_name}.${field}" "$yaml_file" 2>/dev/null | {
+        read -r value
+        if [[ "$value" == "null" ]]; then
+            echo ""
+        else
+            echo "$value"
+        fi
     }
-    in_prog && /^[[:space:]]{4}'"$field"':[[:space:]]/ {
-        sub(/^[[:space:]]*'"$field"':[[:space:]]*/, "")
-        gsub(/^"/, ""); gsub(/"$/, "")
-        print
-        exit
-    }
-    ' "$yaml_file"
 }
 
 # 色付きメッセージ

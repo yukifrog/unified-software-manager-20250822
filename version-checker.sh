@@ -53,33 +53,27 @@ init() {
     fi
 }
 
-# YAML値取得 (簡易版)
+# YAML値取得 (yq使用)
 get_yaml_value() {
     local yaml_file="$1"
     local tool_name="$2"
     local field="$3"
     
-    awk -v tool="$tool_name" -v field="$field" '
-    $0 ~ "^[[:space:]]*" tool ":[[:space:]]*$" { in_tool=1; next }
-    in_tool && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
-        if (!/^[[:space:]]{4}/) in_tool=0 
+    # yqを使用してYAMLから値を取得
+    yq eval ".${tool_name}.${field}" "$yaml_file" 2>/dev/null | {
+        read -r value
+        if [[ "$value" == "null" ]]; then
+            echo ""
+        else
+            echo "$value"
+        fi
     }
-    in_tool && $0 ~ "^[[:space:]]{4}" field ":[[:space:]]" {
-        gsub("^[[:space:]]*" field ":[[:space:]]*\"?", "")
-        gsub(/".*$/, "")
-        print
-        exit
-    }
-    ' "$yaml_file"
 }
 
-# ツール一覧取得
+# ツール一覧取得 (yq使用)
 get_tools_list() {
-    awk '/^[[:space:]]*[a-zA-Z0-9_-]+:[[:space:]]*$/ && !/^[[:space:]]*(metadata|github_api|pr_settings|notifications):[[:space:]]*$/ {
-        gsub(/^[[:space:]]*/, ""); 
-        gsub(/:.*$/, ""); 
-        print
-    }' "$CONFIG_FILE"
+    # yqを使用してツール名一覧を取得（メタデータセクションを除外）
+    yq eval '. | keys | .[] | select(. != "metadata" and . != "github_api" and . != "pr_settings" and . != "notifications" and . != "tools")' "$CONFIG_FILE" 2>/dev/null
 }
 
 # キャッシュから取得
