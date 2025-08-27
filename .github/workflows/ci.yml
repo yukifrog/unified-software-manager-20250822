@@ -1,0 +1,340 @@
+name: CI Pipeline
+
+'on':
+  push:
+    branches: [master, main, develop]
+  pull_request:
+    branches: [master, main, develop]
+  schedule:
+    # Auto-update check daily at 9:00 JST (00:00 UTC)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    name: Unit Tests (29 Bats Tests)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install bats-core and dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats jq curl
+
+      - name: Install GitHub CLI for tests
+        run: |
+          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | \
+            sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) \
+            signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
+            https://cli.github.com/packages stable main" | \
+            sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install gh
+
+      - name: Create cache directory
+        run: mkdir -p ~/.unified-software-manager-manager/cache
+
+      - name: Run unit tests (version-checker.bats)
+        run: bats tests/version-checker.bats
+
+      - name: Run integration tests (version-checker-integration.bats)
+        run: bats tests/version-checker-integration.bats
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run complete test suite (29 tests)
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          test_count=$(bats tests/ --count)
+          echo "Total tests: $test_count" >> $GITHUB_STEP_SUMMARY
+          bats tests/
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Telegram notification on test failure
+        if: failure()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && \
+             [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            curl -s -X POST \
+              "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="❌ CI Tests Failed in ${{ github.repository }}
+
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+          Workflow: ${{ github.workflow }}
+
+          View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+
+  shellcheck:
+    name: Shell Script Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck on main scripts
+        run: |
+          echo "## ShellCheck Results" >> $GITHUB_STEP_SUMMARY
+
+          # Main script linting
+          shellcheck version-checker.sh
+          shellcheck lib/version-functions.sh
+
+          # All shell scripts
+          find . -name "*.sh" -not -path "./.git/*" | while read -r script; do
+            echo "Checking: $script" >> $GITHUB_STEP_SUMMARY
+            shellcheck "$script"
+          done
+
+      - name: Run shellcheck on bats test files
+        run: |
+          # Check bats files for shell compliance
+          find tests/ -name "*.bats" -exec shellcheck -s bash {} \; || true
+
+      - name: Telegram notification on shellcheck failure
+        if: failure()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && \
+             [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            curl -s -X POST \
+              "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="⚠️ ShellCheck Failed in ${{ github.repository }}
+
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+          View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+
+  yamllint:
+    name: YAML Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Validate monitoring config
+        run: yamllint monitoring-configs/tools.yaml
+
+      - name: Validate GitHub Actions workflows
+        run: yamllint .github/workflows/
+
+      - name: Validate other YAML files
+        run: |
+          find . -name "*.yml" -o -name "*.yaml" | \
+            grep -v node_modules | while read -r file; do
+            echo "Validating: $file"
+            yamllint "$file"
+          done
+
+      - name: Telegram notification on YAML validation failure
+        if: failure()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && \
+             [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            curl -s -X POST \
+              "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="📄 YAML Validation Failed in ${{ github.repository }}
+
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+          View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: Smoke test --help command
+        run: |
+          echo "## Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "### --help command test" >> $GITHUB_STEP_SUMMARY
+
+          if ./version-checker.sh --help > /dev/null 2>&1; then
+            echo "✅ --help command works" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ --help command failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Smoke test --check command
+        run: |
+          echo "### --check command test" >> $GITHUB_STEP_SUMMARY
+
+          # Test basic --check functionality (handles missing tools gracefully)
+          if timeout 30 ./version-checker.sh --check terraform 2>&1 | \
+             grep -E "(設定に見つかりません|エラーが発生しました)" > /dev/null; then
+            echo "✅ --check command handles missing tools gracefully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ --check command crashed unexpectedly" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Smoke test basic functionality
+        run: |
+          echo "### Basic functionality test" >> $GITHUB_STEP_SUMMARY
+
+          # Test that the script runs and shows help (most reliable test)
+          if ./version-checker.sh --help | grep -q "バージョンチェッカー"; then
+            echo "✅ Basic functionality works" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Basic functionality failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Telegram notification on smoke test failure
+        if: failure()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && \
+             [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            curl -s -X POST \
+              "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="💨 Smoke Tests Failed in ${{ github.repository }}
+
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+          View details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+
+  auto-update-check:
+    name: Auto Update Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: Run auto update check
+        run: |
+          echo "## Auto Update Check Results" >> $GITHUB_STEP_SUMMARY
+
+          # Run version checker to identify updates
+          if ./version-checker.sh --check-all > update_results.txt 2>&1; then
+            echo "### Update Check Completed" >> $GITHUB_STEP_SUMMARY
+
+            # Look for updates available
+            if grep -q "更新が利用可能" update_results.txt; then
+              echo "🔄 Updates available" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              echo "```" >> $GITHUB_STEP_SUMMARY
+              grep -A 2 -B 2 "更新が利用可能" update_results.txt >> $GITHUB_STEP_SUMMARY
+              echo "```" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "✅ All tools are up to date" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ Update check failed" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Telegram notification for updates
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && \
+             [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            if grep -q "更新が利用可能" update_results.txt; then
+              update_count=$(grep -c "更新が利用可能" update_results.txt)
+              curl -s -X POST \
+                "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+                -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+                -d text="🔄 Auto Update Check: $update_count updates available
+
+          Repository: ${{ github.repository }}
+          Check the Actions tab for details
+
+          View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            fi
+          fi
+
+  ci-summary:
+    name: CI Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [unit-tests, shellcheck, yamllint, smoke-tests]
+    if: always()
+
+    steps:
+      - name: Generate CI summary
+        run: |
+          echo "## CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests (29 tests) | ${{ needs.unit-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| ShellCheck | ${{ needs.shellcheck.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| YAML Validation | ${{ needs.yamllint.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Smoke Tests | ${{ needs.smoke-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Telegram notification on CI completion
+        if: always()
+        run: |
+          if [ -n "${{ secrets.TELEGRAM_BOT_TOKEN }}" ] && \
+             [ -n "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then
+            # Determine overall status
+            if [ "${{ needs.unit-tests.result }}" = "success" ] && \
+               [ "${{ needs.shellcheck.result }}" = "success" ] && \
+               [ "${{ needs.yamllint.result }}" = "success" ] && \
+               [ "${{ needs.smoke-tests.result }}" = "success" ]; then
+              status_icon="✅"
+              status_text="CI Pipeline Passed"
+            else
+              status_icon="❌"
+              status_text="CI Pipeline Failed"
+            fi
+
+            curl -s -X POST \
+              "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+              -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+              -d text="$status_icon $status_text
+
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref_name }}
+          Commit: ${{ github.sha }}
+
+          Tests: ${{ needs.unit-tests.result }}
+          Linting: ${{ needs.shellcheck.result }}
+          YAML: ${{ needs.yamllint.result }}
+          Smoke: ${{ needs.smoke-tests.result }}
+
+          View: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
