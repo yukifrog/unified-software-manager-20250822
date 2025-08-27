@@ -13,8 +13,8 @@ github_api:
 
 # 監視対象ツール定義
 tools:
-# Kubernetes関連 - 無効化
-# kubectl:
+  # Kubernetes関連 - 無効化
+  # kubectl:
   #   current_version: "not_installed"
   #   github_repo: "kubernetes/kubernetes"
   #   update_method: "binary_download"
