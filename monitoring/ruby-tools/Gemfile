@@ -13,7 +13,7 @@ gem 'rdoc', '~> 6.6.0'                 # Ruby documentation generator
 
 # Jekyll ecosystem essentials
 gem 'kramdown-parser-gfm', '~> 1.1.0'  # GitHub Flavored Markdown parser for Jekyll
-gem 'rouge', '~> 4.4.0'                # Syntax highlighting for Jekyll
+gem 'rouge', '~> 4.6.0'                # Syntax highlighting for Jekyll
 gem 'jekyll-feed', '~> 0.17.0'         # RSS/Atom feed generator for Jekyll
 
 group :development do
