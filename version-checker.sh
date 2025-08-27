@@ -60,12 +60,12 @@ get_yaml_value() {
     local field="$3"
     
     awk -v tool="$tool_name" -v field="$field" '
-    $0 ~ "^[[:space:]]*" tool ":[[:space:]]*$" { in_tool=1; next }
+    /^[[:space:]]*'"$tool_name"':[[:space:]]*$/ { in_tool=1; next }
     in_tool && /^[[:space:]]*[a-zA-Z_][a-zA-Z0-9_]*:[[:space:]]*$/ { 
-        if (!/^[[:space:]]{4}/) in_tool=0 
+        if (!/^[[:space:]]{2}/) in_tool=0 
     }
-    in_tool && $0 ~ "^[[:space:]]{4}" field ":[[:space:]]" {
-        gsub("^[[:space:]]*" field ":[[:space:]]*\"?", "")
+    in_tool && /^[[:space:]]{2}'"$field"':[[:space:]]/ {
+        gsub(/^[[:space:]]*'"$field"':[[:space:]]*"?/, "")
         gsub(/".*$/, "")
         print
         exit
@@ -432,23 +432,45 @@ EOF
 main() {
     init
     
-    case "${1:-}" in
+    # --key=value 形式の引数をパース
+    local output_format="table"
+    local category="all"
+    local args=()
+    
+    for arg in "$@"; do
+        case "$arg" in
+            --output-format=*)
+                output_format="${arg#*=}"
+                ;;
+            --category=*)
+                category="${arg#*=}"
+                ;;
+            *)
+                args+=("$arg")
+                ;;
+        esac
+    done
+    
+    case "${args[0]:-}" in
         --check-all)
-            check_updates "${2:-table}" "${3:-all}"
+            # --output-format=json と --check-all の組み合わせをサポート
+            local check_output_format="${args[1]:-$output_format}"
+            local check_category="${args[2]:-$category}"
+            check_updates "$check_output_format" "$check_category"
             ;;
         --check)
-            if [[ -z "${2:-}" ]]; then
+            if [[ -z "${args[1]:-}" ]]; then
                 error "ツール名を指定してください"
                 exit 1
             fi
-            check_single_tool "$2"
+            check_single_tool "${args[1]}"
             ;;
         --category)
-            if [[ -z "${2:-}" ]]; then
+            if [[ -z "${args[1]:-}" ]]; then
                 error "カテゴリを指定してください"
                 exit 1
             fi
-            check_updates "table" "$2"
+            check_updates "table" "${args[1]}"
             ;;
         --output-format)
             error "--output-format は --check-all と組み合わせて使用してください"
@@ -462,7 +484,7 @@ main() {
             show_help
             ;;
         *)
-            error "不明なオプション: $1"
+            error "不明なオプション: ${args[0]}"
             show_help
             exit 1
             ;;
