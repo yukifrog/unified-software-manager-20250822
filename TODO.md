@@ -7,10 +7,17 @@
   - OAuth制限回避のためSmoke Tests削除または代替手法
   - **推定**: 1日
 
-- [ ] **Bashセキュリティ強化** (Issue #56)
-  - `set -euo pipefail` を全スクリプトに追加
-  - 入力検証とクォート修正の実装
-  - **推定**: 1-2日
+- [x] **Bashセキュリティ強化 - 主要スクリプト** (Issue #56) 
+  - `set -euo pipefail` を version-checker.sh, setup.sh に追加完了
+  - セキュリティテスト 3個作成・全32テスト通過確認
+  - **完了**: 2025-08-28
+
+- [ ] **Bashセキュリティ強化 - 残りスクリプト** (Issue #56 継続)
+  - 残り6個のスクリプトに `set -euo pipefail` 追加:
+    - claude_notify.sh, test-comparison.sh, runtime-manager-detector.sh
+    - lib/version-functions.sh, node-manager-detector.sh, telegram_env.sh
+  - 入力検証とクォート修正の実装  
+  - **推定**: 半日
 
 - [ ] **Dependabot PR処理** (#47, #48, #49, #50, #51, #24)
   - セキュリティ更新の早期適用
