@@ -1,9 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
-# バージョンチェッカースクリプト
+# バージョンチェッカースクリプト  
 # GitHub APIを使用してツールの最新バージョンを取得し、現在のバージョンと比較
-
-set -eo pipefail  # -u を削除してunbound variable でスクリプトが停止しないように
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$SCRIPT_DIR/monitoring-configs/tools.yaml"

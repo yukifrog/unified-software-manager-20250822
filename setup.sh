@@ -1,9 +1,8 @@
 #!/bin/bash
+set -euo pipefail
 
 # Unified Software Manager Manager セットアップスクリプト
 # 初期設定と依存関係のインストールを行う
-
-set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="$HOME/.unified-software-manager-manager"
