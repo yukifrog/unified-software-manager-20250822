@@ -5,7 +5,7 @@
   "private": true,
   "dependencies": {
     "@google/gemini-cli": "0.2.2",
-    "@anthropic-ai/claude-code": "1.0.92"
+    "@anthropic-ai/claude-code": "1.0.96"
   },
   "devDependencies": {},
   "scripts": {
