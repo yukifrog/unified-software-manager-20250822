@@ -9,7 +9,7 @@ ruby '3.1.0'  # Common Ruby version for monitoring
 # 🎨 Static Site Generation & Presentation Tools
 gem 'jekyll', '~> 4.3.0'               # Static site generator for blogs/docs
 gem 'rabbit', '~> 3.0.3'               # Ruby-based presentation tool
-gem 'rdoc', '~> 6.6.0'                 # Ruby documentation generator
+gem 'rdoc', '~> 6.14.2'                # Ruby documentation generator
 
 # Jekyll ecosystem essentials
 gem 'kramdown-parser-gfm', '~> 1.1.0'  # GitHub Flavored Markdown parser for Jekyll
