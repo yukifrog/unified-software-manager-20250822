@@ -23,6 +23,15 @@ Thumbs.db
 *.bak
 backups/
 
+# Claude Code バックアップファイル
+.claude-backups/
+~/.claude-backups/
+*.backup.[0-9]*_[0-9]*
+*~
+
+# Claude Code セッション管理ファイル
+.claude-session-start
+
 # テスト出力
 test-output/
 *.test

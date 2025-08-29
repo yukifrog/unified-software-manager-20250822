@@ -70,7 +70,54 @@
 - Dependabotモニタリングファイルで更新通知受信
 
 ## 自動化設定
-### **Subagent活用**
+
+### **現在実装済み ✅**
+- **基本的な権限管理**: `.claude/settings.local.json` で shellcheck, gh コマンド等の自動実行許可設定済み
+- **高度なHookシステム**: `.claude/hooks.json` で包括的開発自動化実装済み
+
+#### **フェーズ1: セキュリティ・品質強化**
+- **PostToolUse hooks**: 
+  - Shell scripts (.sh) → shellcheck 自動実行
+  - YAML files (.yml/.yaml) → yamllint 自動実行  
+  - JSON files (.json) → jq 検証自動実行
+  - Markdown files (.md) → markdownlint 自動実行
+  - **全ファイル → gitleaks 秘密情報検出**
+  - **.sh ファイル → bats 自動テスト実行**
+- **PreToolUse hooks**: 
+  - rm -rf → 危険コマンド警告
+  - sudo → 特権コマンド通知
+  - chmod 777 → セキュリティ警告
+  - **重要ファイル編集前 → 自動バックアップ** (tools.yaml, CLAUDE.md, TODO.md)
+
+#### **フェーズ2: 通知・連携システム**
+- **UserPromptSubmit hooks**: 
+  - 複数ファイル変更検知時のcommit提案
+  - **作業時間追跡・長時間作業時の休憩リマインド**
+  - **CI失敗検出・通知** (GitHub Actions連携)
+- **SessionStart/SessionEnd hooks**: 
+  - **セッション時間自動追跡**
+  - **外部通知システム連携** (Telegram/Signal Bot対応)
+
+#### **フェーズ3: プロジェクト管理自動化**
+- **SessionEnd hooks**: 
+  - **TODO.md 自動セッションログ追加**
+  - **変更統計自動記録**
+- **Notification hooks**: 
+  - **汎用通知システム** (環境変数制御)
+
+#### **環境変数設定システム**
+- **`.claude/hook-config.env`**: 全hook機能の細かい設定制御
+  - 通知レベル・静音時間・タイムアウト設定
+  - 外部サービス連携URL設定  
+  - セキュリティスキャン・自動テスト有効/無効
+
+### **実装可能だが未実装**
+- **依存関係更新検知**: package.json等変更時の自動更新提案
+- **AI モデル自動選択**: タスク複雑度によるモデル切り替え
+- **自動PR作成**: 機能完成検知時のPR自動生成
+
+### **将来の夢 🌟 (理想的な自動化ワークフロー)**
+#### **Subagent活用 (構想)**
 - **code-quality-agent**: シェルスクリプト編集完了時に静的解析ツール一括実行
 - **pr-creation-agent**: 機能完成時にPR作成プロセスを自動化
 - **dependency-update-agent**: 全パッケージマネージャー更新チェック→実行→テスト→commit自動化
@@ -82,7 +129,7 @@
 - **documentation-sync-agent**: ドキュメントと実装の整合性チェック・同期
 - **ai-model-switch-agent**: タスクに応じた最適AI選択・実行 ⭐
 
-### **Hook活用**  
+#### **Hook活用 (構想)**  
 - **tool-call-hook**: .shファイル編集時のshellcheck自動実行
 - **user-prompt-submit-hook**: 複数ファイル変更完了時のcommit提案
 - **user-input-wait-hook**: ユーザー入力待ち状態での通知・状況確認 ⭐

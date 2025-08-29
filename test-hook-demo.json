@@ -1,0 +1,12 @@
+{
+  "hookTest": true,
+  "description": "Hook システム JSON テスト",
+  "timestamp": "2025-08-28T23:10:00Z",
+  "features": [
+    "shellcheck",
+    "yamllint", 
+    "jq validation",
+    "gitleaks scanning"
+  ],
+  "status": "active"
+}

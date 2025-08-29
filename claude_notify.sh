@@ -6,6 +6,32 @@
 claude_notify() {
     local message="$1"
     
+    # 静音時間チェック
+    if [ -n "${CLAUDE_NOTIFY_QUIET_HOURS:-}" ]; then
+        local current_time=$(date +"%H:%M")
+        local quiet_start="${CLAUDE_NOTIFY_QUIET_HOURS%%-*}"
+        local quiet_end="${CLAUDE_NOTIFY_QUIET_HOURS##*-}"
+        
+        # 時刻比較（23:59-08のような日跨ぎも対応）
+        local current_hour_min="${current_time//:}"
+        local quiet_start_num="${quiet_start//:}"
+        local quiet_end_num="${quiet_end//:}"
+        
+        if [ "$quiet_start_num" -gt "$quiet_end_num" ]; then
+            # 日跨ぎパターン (23:59-08)
+            if [ "$current_hour_min" -ge "$quiet_start_num" ] || [ "$current_hour_min" -le "$quiet_end_num" ]; then
+                echo "🔇 静音時間中 ($quiet_start-$quiet_end) - 通知をスキップ"
+                return 0
+            fi
+        else
+            # 通常パターン (08-22)
+            if [ "$current_hour_min" -ge "$quiet_start_num" ] && [ "$current_hour_min" -le "$quiet_end_num" ]; then
+                echo "🔇 静音時間中 ($quiet_start-$quiet_end) - 通知をスキップ"
+                return 0
+            fi
+        fi
+    fi
+    
     # 環境変数チェック
     if [ -z "$TELEGRAM_BOT_TOKEN" ]; then
         echo "⚠️  TELEGRAM_BOT_TOKEN が設定されていません"

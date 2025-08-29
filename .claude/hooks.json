@@ -1,0 +1,217 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash.*rm -rf",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️  Dangerous command detected: rm -rf. Proceeding with caution...'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash.*sudo",
+        "hooks": [
+          {
+            "type": "command", 
+            "command": "echo '🔐 Privileged command detected: sudo. Ensure this is necessary.'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash.*chmod.*777",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '⚠️  Security warning: chmod 777 detected. Consider more restrictive permissions.'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*(tools\\.yaml|CLAUDE\\.md|TODO\\.md)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p ~/.claude-backups && cp \"$TOOL_RESULT_FILE_PATH\" ~/.claude-backups/\"$(basename \"$TOOL_RESULT_FILE_PATH\")\".backup.$(date +%Y%m%d_%H%M%S) && echo '💾 Critical file backup created: ~/.claude-backups/$(basename \"$TOOL_RESULT_FILE_PATH\").backup.$(date +%Y%m%d_%H%M%S)'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*(tools\\.yaml|CLAUDE\\.md|TODO\\.md)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "mkdir -p ~/.claude-backups && cp \"$TOOL_RESULT_FILE_PATH\" ~/.claude-backups/\"$(basename \"$TOOL_RESULT_FILE_PATH\")\".backup.$(date +%Y%m%d_%H%M%S) && echo '💾 Critical file backup created: ~/.claude-backups/$(basename \"$TOOL_RESULT_FILE_PATH\").backup.$(date +%Y%m%d_%H%M%S)'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit.*\\.sh$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "shellcheck \"$TOOL_RESULT_FILE_PATH\" && echo '✅ ShellCheck passed for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*\\.sh$", 
+        "hooks": [
+          {
+            "type": "command",
+            "command": "shellcheck \"$TOOL_RESULT_FILE_PATH\" && echo '✅ ShellCheck passed for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*\\.ya?ml$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "yamllint \"$TOOL_RESULT_FILE_PATH\" && echo '✅ YAML validation passed for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*\\.ya?ml$",
+        "hooks": [
+          {
+            "type": "command", 
+            "command": "yamllint \"$TOOL_RESULT_FILE_PATH\" && echo '✅ YAML validation passed for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*\\.json$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq empty \"$TOOL_RESULT_FILE_PATH\" && echo '✅ JSON validation passed for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*\\.json$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && jq empty \"$TOOL_RESULT_FILE_PATH\" && echo '✅ JSON validation passed for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*\\.md$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v markdownlint >/dev/null && markdownlint \"$TOOL_RESULT_FILE_PATH\" && echo '✅ Markdown validation passed for $TOOL_RESULT_FILE_PATH' || echo '⚠️ markdownlint not found, skipping validation for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*\\.md$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && command -v markdownlint >/dev/null && markdownlint \"$TOOL_RESULT_FILE_PATH\" && echo '✅ Markdown validation passed for $TOOL_RESULT_FILE_PATH' || echo '⚠️ markdownlint not found, skipping validation for $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*\\.(sh|yaml|yml|json|md|py|js|ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && command -v gitleaks >/dev/null && gitleaks detect --source=\"$TOOL_RESULT_FILE_PATH\" --verbose 2>&1 | grep -E '(Secret|Key|Token|Password)' && echo '🔐 Secret scan completed for $TOOL_RESULT_FILE_PATH' || echo '✅ No secrets detected in $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*\\.(sh|yaml|yml|json|md|py|js|ts)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && command -v gitleaks >/dev/null && gitleaks detect --source=\"$TOOL_RESULT_FILE_PATH\" --verbose 2>&1 | grep -E '(Secret|Key|Token|Password)' && echo '🔐 Secret scan completed for $TOOL_RESULT_FILE_PATH' || echo '✅ No secrets detected in $TOOL_RESULT_FILE_PATH'"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit.*\\.sh$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && [ -d tests/ ] && command -v bats >/dev/null && echo '🧪 Running tests after shell script modification...' && bats tests/ && echo '✅ All tests passed' || echo '⚠️ Tests not available or skipped'"
+          }
+        ]
+      },
+      {
+        "matcher": "MultiEdit.*\\.sh$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && [ -d tests/ ] && command -v bats >/dev/null && echo '🧪 Running tests after shell script modification...' && bats tests/ && echo '✅ All tests passed' || echo '⚠️ Tests not available or skipped'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && git status --porcelain | wc -l | awk '{if($1>3) print \"💡 複数ファイル変更検出 (\"$1\"個) - commitを検討してください\"}'"
+          },
+          {
+            "type": "command",
+            "command": "[ ! -f ~/.claude-session-start ] && echo $(date +%s) > ~/.claude-session-start || { DURATION=$(($(date +%s) - $(cat ~/.claude-session-start))); [ $DURATION -gt 3600 ] && echo \"⏰ 作業開始から$(($DURATION/60))分経過 - 休憩を検討してください\" || true; }"
+          },
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && [ \"$CLAUDE_NOTIFY_ENABLED\" = \"true\" ] && command -v gh >/dev/null && gh run list --limit 5 --json status,conclusion,name 2>/dev/null | jq -r '.[] | select(.conclusion==\"failure\") | \"🔴 CI失敗検出: \" + .name' | head -3 || true"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo $(date +%s) > ~/.claude-session-start && echo '🚀 Claude Code セッション開始: $(date)' && [ \"$CLAUDE_NOTIFY_ENABLED\" = \"true\" ] && [ -n \"$TELEGRAM_BOT_TOKEN\" ] && [ -n \"$TELEGRAM_CHAT_ID\" ] && cd /home/yuuki/app_updater && ./claude_notify.sh \"セッション開始\" || true"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f ~/.claude-session-start ] && DURATION=$(($(date +%s) - $(cat ~/.claude-session-start))) && echo \"📊 セッション終了: $(($DURATION/60))分間作業\" && rm -f ~/.claude-session-start && [ \"$CLAUDE_NOTIFY_ENABLED\" = \"true\" ] && [ -n \"$TELEGRAM_BOT_TOKEN\" ] && [ -n \"$TELEGRAM_CHAT_ID\" ] && cd /home/yuuki/app_updater && ./claude_notify.sh \"セッション終了: $(($DURATION/60))分間作業\" || true"
+          },
+          {
+            "type": "command",
+            "command": "cd /home/yuuki/app_updater && [ -f TODO.md ] && echo \"\\n## $(date '+%Y-%m-%d %H:%M:%S') セッション完了\" >> TODO.md && git status --porcelain | wc -l | awk '{print \"- 変更ファイル数: \" $1}' >> TODO.md && echo '📝 TODO.md セッションログ更新完了' || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ \"$CLAUDE_NOTIFY_ENABLED\" = \"true\" ] && [ -n \"$1\" ] && echo \"🔔 通知: $1\" && [ -n \"$TELEGRAM_BOT_TOKEN\" ] && [ -n \"$TELEGRAM_CHAT_ID\" ] && cd /home/yuuki/app_updater && ./claude_notify.sh \"$1\" || true"
+          }
+        ]
+      }
+    ]
+  }
+}

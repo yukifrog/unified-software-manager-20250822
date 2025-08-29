@@ -1,0 +1,18 @@
+# Hook テストYAML - 意図的なフォーマット問題を含む
+name: hook-test
+description: "Hook システムのテスト"
+
+# インデント問題
+config:
+  enabled: true
+    nested: "インデント不正"  # 意図的な問題
+  
+# 長い行
+very_long_line_that_exceeds_recommended_yaml_line_length_and_should_trigger_yamllint_warning: "This line is intentionally very long to test yamllint hook functionality"
+
+# トレーリングスペース   
+test: "value"   
+
+list:
+  - item1
+  - item2

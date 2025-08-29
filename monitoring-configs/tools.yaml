@@ -3,8 +3,11 @@
 
 metadata:
   version: "1.0.0"
-  last_updated: "2025-08-23"
+  last_updated: "2025-08-28"
   description: "Dependabot対象外ツールの自動更新設定"
+  hook_test: true
+  phase1_hooks_active: true
+  hook_system_test: "2025-08-28T23:10"
 
 # GitHub API設定
 github_api:
@@ -144,6 +147,24 @@ zoxide:
       zoxide-{version}-x86_64-unknown-linux-musl.tar.gz |
     tar xzf - -C /tmp && mv /tmp/zoxide ~/.local/bin/
   category: "cli"
+  priority: "high"
+
+markdownlint-cli:
+  current_version: "0.45.0"
+  npm_package: "markdownlint-cli"
+  update_method: "npm_global"
+  install_command: "npm install -g markdownlint-cli"
+  category: "linter"
+  priority: "medium"
+
+gitleaks:
+  current_version: "8.28.0"
+  github_repo: "gitleaks/gitleaks"
+  update_method: "binary_download"
+  install_command: >
+    wget -O gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v{version}/gitleaks_{version}_linux_x64.tar.gz &&
+    tar -xzf gitleaks.tar.gz gitleaks && mv gitleaks ~/.local/bin/ && rm gitleaks.tar.gz
+  category: "security"
   priority: "high"
 
 starship:
